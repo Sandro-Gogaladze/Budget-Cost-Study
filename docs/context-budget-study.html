@@ -529,16 +529,23 @@ print(r.usage)   <span class="c"># must still carry cached / reasoning token det
   </div>
   <p>Three points on the budget axis (NATIVE, LOOSE, TIGHT) is the minimum that can show a U. MEDIUM is the first thing to add after PRUNE when budget returns — and because the design is nested, it slots in without touching anything already run.</p>
 
-  <h3>Budgets as a fraction of each task's own peak</h3>
+  <h3>Budgets: absolute token values (decision 2026-08-28)</h3>
   <div class="note acc">
-    <span class="tag">Why relative, not absolute</span>
-    <div class="scroll" style="margin:10px 0"><pre><code>budget(task, level) = max(frac[level] * peak_full[task],  2.5 * head[task])
+    <span class="tag">Absolute, like production — a dated design change</span>
+    <div class="scroll" style="margin:10px 0"><pre><code>budget(level) = one token value for EVERY task   (set by E2 from E1's measured peaks)
 
-   NATIVE = 1M (control)        LOOSE = 60%        TIGHT = 20%</code></pre></div>
-    <p>An absolute grid would make a 40K task compact once and a 240K task compact eight times — <b>different treatment intensities wearing the same label.</b> On an unfiltered random sample, where lengths vary by 5× or more, that would be fatal. A relative grid holds compaction pressure constant across the whole sample, which is exactly what lets us stop filtering on length.</p>
-    <p style="margin-top:10px">It is also more transferable: <em>"compact at ~20% of your typical peak"</em> survives a model change; <em>"compact at 64K"</em> does not. Report both the fractions and the resulting absolute token values.</p>
+   TIGHT: >=1 compaction on >=75% of tasks, >=3 on >=50%     LOOSE: treats 30-50%</code></pre></div>
+    <p>The earlier draft set budgets per task as a fraction of its own peak — cleaner dose
+    control, but a task-level oracle: no engineer can set "20% of this task's eventual peak."
+    The production knob is absolute, so the study's axis is absolute. The cost, accepted
+    knowingly: at any absolute budget the short tasks never compact — the arms are identical
+    there — so H1's effective sample shrinks to the treated tasks (treated share reported per
+    level; the power simulation models the dilution). That mixture is not a bias: it is
+    exactly what deploying that budget does to a real workload, and treatment status is
+    determined by task length, a pre-treatment covariate, so restricting the H1 contrast to
+    treated tasks is legitimate and pre-declared.</p>
   </div>
-  <p><strong>Acceptance test:</strong> at LOOSE, ≥30% of the sample compacts at least once. At TIGHT, ≥80% compacts ≥3×, the median view still carries ≥1.5× the head in real history, and the overflow guard trips on &lt;10% of steps. If no fraction pair satisfies all four, adjust the <em>fractions</em> — never the sample.</p>
+  <p><strong>Acceptance test:</strong> at LOOSE, ≥30% of the sample compacts at least once. At TIGHT, ≥80% compacts ≥3×, the median view still carries ≥1.5× the head in real history, and the overflow guard trips on &lt;10% of steps. If no value pair satisfies the targets, adjust the <em>values</em> — never the sample.</p>
 </section>
 
 <section id="runs" class="col">
