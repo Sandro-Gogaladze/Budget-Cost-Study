@@ -30,12 +30,20 @@ SYSTEM_TEMPLATE = """You are a software engineering agent working in a sandboxed
 at /app, which contains the repository you must modify.
 In each reply, think briefly, then give exactly ONE bash command in a ```bash fenced block.
 The command's output will be returned to you. Long outputs are truncated, so prefer \
-targeted commands (grep -n, sed -n, head). When you are confident the task is complete, reply with
+targeted commands (grep -n, sed -n, head).
+ONLY a fenced block tagged bash is executed — ```python or untagged fences are ignored.
+To run a script, wrap it in a bash heredoc inside the bash fence, e.g.:
+```bash
+python3 - <<'PYEOF'
+print("hello")
+PYEOF
+```
+When you are confident the task is complete, reply with
 ```bash
 echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT
 ```"""
 
-ACTION_REGEX = r"```bash\s*\n(.*?)\n```"
+ACTION_REGEX = r"```(?:bash|sh)\s*\n(.*?)\n```"
 
 INSTANCE_TEMPLATE = "{{task}}"
 
@@ -109,8 +117,16 @@ def make_model(model_name: str):
     }
     if C.REASONING_EFFORT:
         kwargs["extra_body"] = {"reasoning_effort": C.REASONING_EFFORT}
-    return LitellmTextbasedModel(model_name=C.litellm_name(model_name),
-                                 model_kwargs=kwargs, action_regex=ACTION_REGEX)
+    return LitellmTextbasedModel(
+        model_name=C.litellm_name(model_name),
+        model_kwargs=kwargs, action_regex=ACTION_REGEX,
+        format_error_template=(
+            "Found {{actions|length}} executable actions. Your reply must contain "
+            "EXACTLY ONE fenced block tagged bash, like:\n"
+            "```bash\n<one command>\n```\n"
+            "Only ```bash fences are executed — ```python, ```go or untagged fences are NOT. "
+            "To run a script, feed it to the interpreter via a heredoc INSIDE the bash fence."
+        ))
 
 
 def run_one(task_id: str, *, strategy: str, budget_tokens, seed: int,
@@ -247,7 +263,7 @@ def _already_done() -> set[tuple]:
             continue
         try:
             r = json.load(open(os.path.join(d, "run.json")))
-            if r.get("exit_reason") not in ("infra_error", ""):
+            if r.get("exit_reason") not in ("infra_error", "RepeatedFormatError", ""):
                 done.add(_done_key(r))
         except (OSError, json.JSONDecodeError):
             continue

@@ -19,3 +19,4 @@ deviations and must be recorded here with their date.
 | 2026-08-28 | Price table frozen (measured from proxy billing): in $1.50/M · cached $0.15/M · out $9.00/M | reconciled against `x-litellm-response-cost` |
 | 2026-08-28 | E0 run reclassified calibration-only (`runs/CAL-*`) | ran under old capped config; mixing it into the control arm would be a silent inconsistency |
 | 2026-08-28 | Census parallelism: 3 workers + image prefetch; images kept on disk | ~4–6× wall clock; 82GB free covers all 12 images; the grid reuses them |
+| 2026-08-28 | Config v3: accept ```sh as well as ```bash; corrective format-error template (shows the exact required fence + heredoc rule); same rule added to the system prompt; `RepeatedFormatError` never counts as a finished run | the default error message ("provide EXACTLY ONE action") cannot teach the fence contract — observed drift to ```python fences at step 74; harness-contract failures are reruns, not results |
