@@ -28,7 +28,7 @@ def draw_difficulties(rng, n):
     return out
 
 
-def simulate(n_tasks, k, lam, n_sims=300, seed=0):
+def simulate(n_tasks, k, lam, n_sims=300, seed=0, treated_share=1.0):
     rng = random.Random(seed)
     hits, mean_gaps = 0, []
     for s in range(n_sims):
@@ -36,7 +36,10 @@ def simulate(n_tasks, k, lam, n_sims=300, seed=0):
         # stable arm: same tasks, resolved more deterministically (pushed from 0.5)
         p_ret = [0.5 + (1 if di >= 0.5 else -1) * 0.5 * (abs(di - 0.5) * 2) ** 0.4
                  if di > 0 else 0.0 for di in d]
-        p_sum = [di + lam * (0.5 - di) if di > 0 else 0.0 for di in d]  # flippier arm
+        # absolute budgets: short tasks never compact -> arms identical there
+        treated = [rng.random() < treated_share for _ in range(n_tasks)]
+        p_sum = [di + lam * (0.5 - di) if (di > 0 and treated[i]) else p_ret[i]
+                 for i, di in enumerate(d)]  # flippier only where compaction fires
         rows_r = [{"task_id": f"t{t}", "reward": int(rng.random() < p_ret[t]), "total_cost_usd": 0}
                   for t in range(n_tasks) for _ in range(k)]
         rows_s = [{"task_id": f"t{t}", "reward": int(rng.random() < p_sum[t]), "total_cost_usd": 0}
@@ -51,11 +54,13 @@ def simulate(n_tasks, k, lam, n_sims=300, seed=0):
 def main():
     print("power for the Delta-gap CI to exclude 0 (paired, unfiltered mix)")
     print(f"{'lam':>4} {'n':>4} {'K':>3} {'power':>7} {'mean shift':>11}")
-    for lam in (0.3, 0.5, 0.7):
-        for n in (12, 24):
-            for k in (2, 3, 5, 10):
-                pw, ms = simulate(n, k, lam)
-                print(f"{lam:>4} {n:>4} {k:>3} {pw:>7.0%} {ms:>+11.3f}")
+    for ts in (1.0, 0.75):
+        print(f"-- treated share {ts:.0%} --")
+        for lam in (0.3, 0.5, 0.7):
+            for n in (12, 24):
+                for k in (3, 5):
+                    pw, ms = simulate(n, k, lam, treated_share=ts)
+                    print(f"{lam:>4} {n:>4} {k:>3} {pw:>7.0%} {ms:>+11.3f}")
 
 
 if __name__ == "__main__":

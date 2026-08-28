@@ -239,8 +239,12 @@ def census(model_name: str = C.PRIMARY_MODEL, workers: int = 3) -> None:
 
 
 def _budget(task_id: str, level: str, peaks: dict, heads: dict) -> int:
-    return max(int(C.BUDGET_FRACS[level] * peaks[task_id]),
-               int(C.HEAD_FLOOR_MULT * heads[task_id]))
+    b = C.BUDGETS[level]
+    if b is None:
+        raise RuntimeError(f"BUDGETS[{level!r}] not set — run E2 replay first, then freeze it in config")
+    if b < C.HEAD_FLOOR_MULT * heads[task_id]:
+        raise RuntimeError(f"{task_id}: budget {b} < {C.HEAD_FLOOR_MULT}x head — degenerate")
+    return int(b)
 
 
 def _evict_image(task_id: str, keep: set[str]) -> None:

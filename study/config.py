@@ -52,9 +52,13 @@ PRICES = {
 REASONING_EFFORT = None   # None = provider default; "minimal" = thinking off
 
 # ---------------------------------------------------------------- budgets (§06)
-# Relative to each task's own FULL peak; floored at 2.5x the head.
-BUDGET_FRACS = {"LOOSE": 0.60, "TIGHT": 0.20}      # MEDIUM=0.35 added when budget returns
-HEAD_FLOOR_MULT = 2.5
+# DECISION (user, 2026-08-28): ABSOLUTE budgets — one token value per level for
+# every task, like production. Values are fixed by E2 from E1's measured peak
+# distribution (target: TIGHT forces >=3 compactions on >=50% of tasks and >=1 on
+# >=75%; LOOSE treats >=30%). Tasks whose peak < budget never compact — that is
+# the real production mixture, reported as the treated share per level.
+BUDGETS = {"LOOSE": None, "TIGHT": None}           # tokens; set after E2, then frozen
+HEAD_FLOOR_MULT = 2.5                              # sanity guard: budget must exceed 2.5x head
 KEEP_RECENT = 4                  # verbatim recent turns kept beside the summary note
 SUMM_TEMPERATURE = 0.3           # SUMMARIZE arm; SUMMARIZE_T0 uses 0.0
 

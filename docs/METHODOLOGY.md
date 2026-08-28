@@ -43,19 +43,20 @@ stored summary notes (`note_texts` is logged verbatim for exactly this reason).
   because it looks expensive is forbidden (that is length filtering through
   the back door); the rule is **reduce K, never the sample**.
 
-## Budgets: relative, not absolute
+## Budgets: absolute (decision 2026-08-28)
 
-`budget(task, level) = max(frac · peak_full(task), 2.5 · head(task))` with
-LOOSE = 60%, TIGHT = 20%. An absolute grid would make a 40K task compact once
-and a 240K task compact eight times — different treatments wearing one label.
-Relative budgets hold compaction pressure constant across a heterogeneous
-sample, and the resulting advice ("compact at ~X% of your typical peak")
-transfers across models in a way "compact at 64K" does not.
+One token value per level for **every** task — the production knob. The
+earlier per-task-fraction design was cleaner dose control but a task-level
+oracle no engineer can set. Consequences, accepted knowingly: at any absolute
+budget the short tasks never compact (arms identical there), so the treated
+share is reported per level, the power simulation models the dilution, and
+H1's contrast is pre-declared on treated tasks — legitimate because treatment
+status is determined by task length, a pre-treatment covariate.
 
-Acceptance test (checked by free replay before any paid grid run): at LOOSE
-≥30% of tasks compact ≥1×; at TIGHT ≥80% compact ≥3×, the median view still
-carries ≥1.5× the head of real history, and the overflow guard trips on <10%
-of steps.
+Values are picked by free replay (E2) against E1's measured peaks and then
+frozen: TIGHT = largest value with ≥1 compaction on ≥75% of tasks and ≥3 on
+≥50%; LOOSE = a value treating 30–50%; both must exceed 2.5× every head, keep
+median treated view ≥1.5× head, and trip the overflow guard on <10% of steps.
 
 ## Metrics
 

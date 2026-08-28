@@ -102,10 +102,13 @@ file-writes + recent turns) · `PRUNE` (deferred to first extension — the
 zero-overhead cost floor). `FILES`/`EXTRACTIVE` cut (tool-surface change /
 memory-axis question).
 
-**Budgets — relative, per task:**
-`budget = max(frac × peak_full(task), 2.5 × head(task))`, LOOSE = 60%,
-TIGHT = 20%. Equal compaction pressure across a sample whose lengths vary 5×;
-"compact at ~X% of your typical peak" transfers across models.
+**Budgets — absolute, like production (decision 2026-08-28):** one token
+value per level for every task, fixed by E2 from E1's measured peak
+distribution (TIGHT: ≥1 compaction on ≥75% of tasks, ≥3 on ≥50%; LOOSE:
+treats 30–50%). Short tasks that never compact are the *real deployment
+mixture*; the treated share is reported per level, and H1's contrast is
+pre-declared on treated tasks (treatment status is set by task length — a
+pre-treatment covariate, not outcome selection).
 
 **Guardrails (frozen, per user):** **no step cap** (DeepSWE's own protocol) ·
 **$7 cost cap per run** (sole runaway guard, identical in every arm,

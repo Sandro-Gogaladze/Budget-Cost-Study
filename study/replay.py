@@ -12,12 +12,12 @@ import glob
 import json
 import sys
 
-from study.config import BUDGET_FRACS, HEAD_FLOOR_MULT, KEEP_RECENT, PRICES, PRIMARY_MODEL
+from study.config import BUDGETS, HEAD_FLOOR_MULT, KEEP_RECENT, PRICES, PRIMARY_MODEL
 from study.strategies import HEAD_N, ViewState, build_view
 from study.summarizer import simulated_summarize
 from study.tokens import CalibratedEstimator
 
-FRACS = [round(0.10 + 0.05 * i, 2) for i in range(15)]  # 0.10 .. 0.80
+ABS_SWEEP = [16_000, 24_000, 32_000, 48_000, 64_000, 96_000, 128_000, 160_000, 192_000]
 
 
 def load_traj(path: str) -> list[dict]:
@@ -25,11 +25,10 @@ def load_traj(path: str) -> list[dict]:
         return json.load(f)
 
 
-def replay_one(messages: list[dict], frac: float, strategy: str) -> dict:
+def replay_one(messages: list[dict], budget: int, strategy: str) -> dict:
     est = CalibratedEstimator()
     peak = est.tokens(messages)
     head = est.tokens(messages[:HEAD_N])
-    budget = max(int(frac * peak), int(HEAD_FLOOR_MULT * head))
     state = ViewState()
     view_tokens = []
     # replay the growing history call-by-call, as the live loop would see it
@@ -40,7 +39,7 @@ def replay_one(messages: list[dict], frac: float, strategy: str) -> dict:
         view_tokens.append(est.tokens(v))
     overflows = sum(1 for e in state.events if e["event"] == "recent_overflow")
     return {
-        "frac": frac, "strategy": strategy, "budget": budget, "peak": peak, "head": head,
+        "strategy": strategy, "budget": budget, "peak": peak, "head": head,
         "compactions": state.compactions,
         "median_view": sorted(view_tokens)[len(view_tokens) // 2] if view_tokens else 0,
         "overflow_rate": overflows / max(1, len(view_tokens)),
@@ -67,22 +66,26 @@ def main(run_globs: list[str]) -> None:
         print("no trajectories found"); return
     trajs = [load_traj(p) for p in paths]
     print(f"{len(trajs)} trajectories\n")
-    print(f"{'frac':>5} {'strategy':<10} {'>=1 comp':>9} {'>=3 comp':>9} {'med view/head':>14} {'ovfl':>6}")
-    for frac in FRACS:
+    print(f"{'budget':>8} {'strategy':<10} {'treated':>8} {'>=3 comp':>9} {'med view/head':>14} {'ovfl':>6}")
+    for budget in ABS_SWEEP:
         for strat in ("SUMMARIZE", "PRUNE", "RETRIEVE"):
-            rows = [replay_one(t, frac, strat) for t in trajs]
+            rows = [replay_one(t, budget, strat) for t in trajs]
             ge1 = sum(r["compactions"] >= 1 for r in rows) / len(rows)
             ge3 = sum(r["compactions"] >= 3 for r in rows) / len(rows)
             vh = sorted(r["median_view"] / max(1, r["head"]) for r in rows)[len(rows) // 2]
             ov = max(r["overflow_rate"] for r in rows)
-            print(f"{frac:>5} {strat:<10} {ge1:>9.0%} {ge3:>9.0%} {vh:>14.1f} {ov:>6.0%}")
-    # acceptance test against the frozen fractions
-    print("\nacceptance (§06): LOOSE>=30% compact once; TIGHT>=80% compact 3x, view>=1.5x head, ovfl<10%")
-    for level, frac in BUDGET_FRACS.items():
-        rows = [replay_one(t, frac, "SUMMARIZE") for t in trajs]
+            print(f"{budget:>8,} {strat:<10} {ge1:>8.0%} {ge3:>9.0%} {vh:>14.1f} {ov:>6.0%}")
+    print("\npick (then freeze in config.BUDGETS):"
+          "\n  TIGHT = largest value with >=1 compaction on >=75% of tasks AND >=3 on >=50%"
+          "\n  LOOSE = value treating 30-50% of tasks"
+          "\nif set, current config is checked below:")
+    for level, budget in BUDGETS.items():
+        if budget is None:
+            print(f"  {level}: not set"); continue
+        rows = [replay_one(t, budget, "SUMMARIZE") for t in trajs]
         ge1 = sum(r["compactions"] >= 1 for r in rows) / len(rows)
         ge3 = sum(r["compactions"] >= 3 for r in rows) / len(rows)
-        print(f"  {level} ({frac:.0%}): compact>=1 {ge1:.0%} · compact>=3 {ge3:.0%}")
+        print(f"  {level} ({budget:,}): treated {ge1:.0%} · compact>=3 {ge3:.0%}")
 
 
 if __name__ == "__main__":
