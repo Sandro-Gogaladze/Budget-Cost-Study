@@ -295,7 +295,7 @@ footer{width:var(--col);margin-top:64px;padding-top:22px;border-top:1px solid va
   </ul>
 
   <h3>Why not filter on length either</h3>
-  <p>Cost is roughly quadratic in run length, so short tasks are dramatically cheaper — but long runs are precisely where compaction matters. <strong>Selecting short tasks selects away from the phenomenon</strong>, which is a worse bias than the saving is worth. Because budgets are set as a fraction of each task's own peak (§06), the treatment is applied at equal intensity regardless of length anyway, so the only argument for short tasks was money.</p>
+  <p>Cost is roughly quadratic in run length, so short tasks are dramatically cheaper — but long runs are precisely where compaction matters. <strong>Selecting short tasks selects away from the phenomenon</strong>, which is a worse bias than the saving is worth. Under absolute budgets (§06) the long tasks are precisely the treated ones, which makes keeping them non-negotiable; the only argument for short tasks was money.</p>
 
   <div class="note acc">
     <span class="tag">Bound cost with a uniform cap, not a biased sample</span>
@@ -412,7 +412,7 @@ BIG = <span class="s">""</span>.join(<span class="s">"def helper_%d():\n    retu
   <div class="cards three">
     <div class="card"><h5>1M context window</h5><p>FULL is a <b>true uncompacted control on every task</b> — the longest DeepSWE run is ~276K. No overflow policy, no runs lost to the ceiling, and no reason to avoid long tasks.</p></div>
     <div class="card"><h5>Implicit caching</h5><p><span class="big">90%</span>discount on cached input, automatic, minimum ~2K tokens. No <code>cache_control</code> plumbing — <em>if it survives your proxy</em> (§04).</p></div>
-    <div class="card"><h5>Per-task budgets</h5><p>Budgets are a fraction of each task's own peak, so a random sample with wildly varying lengths still receives <b>equal compaction pressure</b> throughout.</p></div>
+    <div class="card"><h5>Absolute budgets</h5><p>One token value per level for every task — the knob production actually turns. Treated share per level is reported; untreated short tasks are the real deployment mixture.</p></div>
   </div>
 
   <h3>Wiring the proxy into Pier</h3>
