@@ -1,0 +1,712 @@
+<title>Three-Axis Run Order</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+
+<style>
+:root{
+  --ground:#F6F8F7;--surface:#FFFFFF;--surface-2:#EDF2F0;
+  --line:#D5DEDB;--line-soft:#E4EBE9;
+  --ink:#111C1A;--ink-2:#3A4B48;--muted:#5F716E;
+  --accent:#0F8F70;--accent-soft:rgba(15,143,112,.10);--accent-line:rgba(15,143,112,.32);
+  --amber:#9A6A18;--amber-soft:rgba(154,106,24,.10);--amber-line:rgba(154,106,24,.30);
+  --alert:#B4453B;--alert-soft:rgba(180,69,59,.09);--alert-line:rgba(180,69,59,.28);
+  --violet:#5B4B9E;--violet-soft:rgba(91,75,158,.10);--violet-line:rgba(91,75,158,.28);
+  --code-bg:#F0F4F2;
+  --f-sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --f-serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --col:min(74ch,100%);--wide:min(1140px,100%);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1417;--surface:#141D21;--surface-2:#18242A;
+    --line:#25343A;--line-soft:#1D2A2F;
+    --ink:#DEE7E5;--ink-2:#B4C3C0;--muted:#83958F;
+    --accent:#45C8A2;--accent-soft:rgba(69,200,162,.10);--accent-line:rgba(69,200,162,.30);
+    --amber:#D9A45B;--amber-soft:rgba(217,164,91,.10);--amber-line:rgba(217,164,91,.28);
+    --alert:#E4796C;--alert-soft:rgba(228,121,108,.10);--alert-line:rgba(228,121,108,.28);
+    --violet:#A798E8;--violet-soft:rgba(167,152,232,.10);--violet-line:rgba(167,152,232,.28);
+    --code-bg:#101A1E;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1417;--surface:#141D21;--surface-2:#18242A;
+  --line:#25343A;--line-soft:#1D2A2F;
+  --ink:#DEE7E5;--ink-2:#B4C3C0;--muted:#83958F;
+  --accent:#45C8A2;--accent-soft:rgba(69,200,162,.10);--accent-line:rgba(69,200,162,.30);
+  --amber:#D9A45B;--amber-soft:rgba(217,164,91,.10);--amber-line:rgba(217,164,91,.28);
+  --alert:#E4796C;--alert-soft:rgba(228,121,108,.10);--alert-line:rgba(228,121,108,.28);
+  --violet:#A798E8;--violet-soft:rgba(167,152,232,.10);--violet-line:rgba(167,152,232,.28);
+  --code-bg:#101A1E;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-sans);
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.page{display:flex;flex-direction:column;align-items:center;padding:0 20px 96px}
+.col{width:var(--col)}.wide{width:var(--wide)}
+.topbar{position:sticky;top:0;z-index:20;width:100%;
+  background:color-mix(in srgb,var(--ground) 92%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line-soft)}
+.topbar-in{max-width:1140px;margin:0 auto;padding:11px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.wordmark{font-family:var(--f-mono);font-weight:600;font-size:13px;letter-spacing:.06em}
+.wordmark span{color:var(--accent)}
+.topnav{display:flex;gap:14px;flex-wrap:wrap;margin-left:auto}
+.topnav a{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;color:var(--muted);
+  text-decoration:none;padding:2px 0;border-bottom:1px solid transparent}
+.topnav a:hover,.topnav a:focus-visible{color:var(--accent);border-bottom-color:var(--accent-line)}
+.hero{padding:56px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px}
+.chip{font-family:var(--f-mono);font-size:11px;letter-spacing:.03em;padding:4px 10px;
+  border:1px solid var(--line);border-radius:2px;color:var(--muted);background:var(--surface)}
+.chip.on{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 10px}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08;letter-spacing:-.022em;font-weight:600;
+  margin:0 0 20px;text-wrap:balance}
+.lede{font-size:17.5px;color:var(--ink-2);margin:0 0 8px}
+.lede strong{color:var(--ink);font-weight:600}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+  border:1px solid var(--line);border-radius:3px;background:var(--surface);
+  margin:34px 0 8px;overflow:hidden}
+.strip div{padding:13px 16px;border-right:1px solid var(--line-soft)}
+.strip div:last-child{border-right:0}
+.strip dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 4px}
+.strip dd{margin:0;font-size:14px;font-weight:500}
+section{padding:52px 0 8px;border-top:1px solid var(--line-soft);margin-top:44px}
+section:first-of-type{border-top:0;margin-top:0}
+.sechead{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+.secnum{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.06em}
+h2{font-size:clamp(21px,2.6vw,27px);line-height:1.2;letter-spacing:-.015em;font-weight:600;margin:0;text-wrap:balance}
+.subhead{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);letter-spacing:.03em;
+  margin:0 0 26px;padding-left:40px}
+h3{font-size:17px;font-weight:600;letter-spacing:-.008em;margin:32px 0 10px;text-wrap:balance}
+h4{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;margin:26px 0 8px}
+p{margin:0 0 15px}
+ul,ol{margin:0 0 15px;padding-left:20px}
+li{margin:0 0 7px}
+li::marker{color:var(--muted)}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line)}
+a:hover,a:focus-visible{border-bottom-color:var(--accent)}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--code-bg);
+  border:1px solid var(--line-soft);border-radius:2px;padding:1px 5px}
+.num{font-variant-numeric:tabular-nums}
+.argument{font-family:var(--f-serif);font-size:18px;line-height:1.6;color:var(--ink);
+  border-left:2px solid var(--accent);padding:4px 0 4px 22px;margin:26px 0}
+.note{border:1px solid var(--line);border-left-width:3px;border-radius:3px;background:var(--surface);
+  padding:15px 18px;margin:24px 0;font-size:14.5px;color:var(--ink-2)}
+.note b{color:var(--ink)}
+.note .tag{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  display:block;margin-bottom:6px}
+.note.acc{border-left-color:var(--accent);background:var(--accent-soft)}
+.note.acc .tag{color:var(--accent)}
+.note.amb{border-left-color:var(--amber);background:var(--amber-soft)}
+.note.amb .tag{color:var(--amber)}
+.note.alr{border-left-color:var(--alert);background:var(--alert-soft)}
+.note.alr .tag{color:var(--alert)}
+.note p:last-child{margin-bottom:0}
+.machine{margin:22px 0}
+.machine-label{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:0 0 7px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+pre{margin:0;padding:16px 18px;font-family:var(--f-mono);font-size:12.5px;line-height:1.66;
+  color:var(--ink-2);white-space:pre}
+pre .c{color:var(--muted)}pre .k{color:var(--accent)}pre .s{color:var(--amber)}pre .w{color:var(--alert)}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;background:var(--surface-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.mono,th.mono{font-family:var(--f-mono);font-size:12.5px}
+tr.hi td{background:var(--accent-soft)}
+.pill{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border-radius:2px;border:1px solid var(--line);color:var(--muted);
+  white-space:nowrap;display:inline-block}
+.pill.must{color:var(--alert);border-color:var(--alert-line);background:var(--alert-soft)}
+.pill.risk{color:var(--amber);border-color:var(--amber-line);background:var(--amber-soft)}
+.pill.done{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+.pill.free{color:var(--violet);border-color:var(--violet-line);background:var(--violet-soft)}
+.phase{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);display:flex;align-items:center;gap:12px;margin:44px 0 4px}
+.phase::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+.phase b{color:var(--accent);font-weight:600}
+.exp{border:1px solid var(--line);border-radius:3px;background:var(--surface);margin:18px 0;overflow:hidden}
+.exp-top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  padding:14px 18px;border-bottom:1px solid var(--line-soft);background:var(--surface-2)}
+.exp-id{font-family:var(--f-mono);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.04em}
+.exp-name{font-size:16px;font-weight:600;letter-spacing:-.008em}
+.exp-meta{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.exp-body{padding:6px 18px 16px}
+.row{display:grid;grid-template-columns:104px 1fr;gap:14px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.row:last-child{border-bottom:0}
+.row .lab{font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);padding-top:3px}
+.row .val{font-size:14.5px;color:var(--ink-2)}
+.row .val p{margin:0 0 8px}.row .val p:last-child{margin:0}
+.row .val ul{margin:0;padding-left:18px}
+.row.gate .lab{color:var(--accent)}
+.row.gate .val{color:var(--ink)}
+.row.gate .val b{color:var(--accent)}
+.cards{display:grid;gap:14px;margin:22px 0}
+.cards.three{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.card{border:1px solid var(--line);border-radius:3px;background:var(--surface);padding:16px 17px}
+.card.pick{border-color:var(--accent-line);background:var(--accent-soft)}
+.card h5{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;margin:0 0 8px}
+.card p{font-size:14.5px;color:var(--ink-2);margin:0 0 8px}
+.card p:last-child{margin:0}
+.card .big{font-family:var(--f-mono);font-size:22px;font-weight:600;color:var(--accent);
+  letter-spacing:-.01em;display:block;margin-bottom:3px;font-variant-numeric:tabular-nums}
+hr.soft{border:0;border-top:1px solid var(--line-soft);margin:34px 0}
+footer{width:var(--col);margin-top:64px;padding-top:22px;border-top:1px solid var(--line-soft);
+  font-family:var(--f-mono);font-size:11px;color:var(--muted);line-height:1.7}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:640px){
+  .subhead{padding-left:0}
+  .row{grid-template-columns:1fr;gap:4px}
+  .strip div{border-right:0;border-bottom:1px solid var(--line-soft)}
+  .exp-meta{margin-left:0;width:100%}
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="wordmark">THREE<span>·</span>AXIS RUN ORDER</div>
+    <nav class="topnav">
+      <a href="#thesis">Thesis</a>
+      <a href="#model">Model</a>
+      <a href="#economics">Economics</a>
+      <a href="#design">Design</a>
+      <a href="#record">Record</a>
+      <a href="#runs">The runs</a>
+      <a href="#tiers">Tiers</a>
+      <a href="#plot">The plot</a>
+      <a href="#prereg">Pre-reg</a>
+    </nav>
+  </div>
+</div>
+
+<div class="page">
+
+<div class="col hero">
+  <div class="chips">
+    <span class="chip on">Success · Reliability · Cost</span>
+    <span class="chip">Gemini Flash</span>
+    <span class="chip">8 experiments</span>
+    <span class="chip">from $260</span>
+  </div>
+  <p class="eyebrow">Companion to the GAIA Project Handbook · volume IV · supersedes volume III for the lean track</p>
+  <h1>Find the context budget that costs the least per correct answer</h1>
+  <p class="lede">Three axes, one cheap model, and a result nobody has published: <strong>the economically optimal context budget.</strong> Raw dollars fall as you tighten the budget. Success falls too. Somewhere between them, dollars-per-<em>correct</em>-answer has a minimum — and that minimum is the number an engineer actually needs.</p>
+
+  <dl class="strip">
+    <div><dt>Axes</dt><dd>Success · Reliability · Cost</dd></div>
+    <div><dt>Dropped for now</dt><dd>Memory / probes</dd></div>
+    <div><dt>Runs</dt><dd>256 → 826</dd></div>
+    <div><dt>API cost</dt><dd>$260 → $700</dd></div>
+  </dl>
+</div>
+
+<!-- ===== 00 ===== -->
+<section id="thesis" class="col">
+  <div class="sechead"><span class="secnum">00</span><h2>What dropping the memory axis buys you</h2></div>
+  <p class="subhead">a smaller study that answers a sharper question</p>
+
+  <p>Cutting probes removes the most labour-intensive third of the design — probe categories, checkers, admission gates, position balancing, the probe-tax control, the three-condition ablation. What remains is not a weakened study. It is a <em>different</em> one, and on a cheap model it is arguably the better one.</p>
+
+  <div class="argument">
+    Three axes with one knob is enough for a complete claim: <em>as you tighten the context budget, success falls, run-to-run consistency falls faster, and raw cost falls — so the dollars you pay per correct answer traces a U.</em> Find the bottom of that U and you have the number every deployed agent is currently guessing.
+  </div>
+
+  <div class="note acc">
+    <span class="tag">Keep one column and you keep the option</span>
+    <p>Log <code>note_text</code> in full anyway — the actual summary the model produced at every compaction. It costs nothing, and it means the <b>entire memory axis can be added later, offline, without re-running anything.</b> If a reviewer asks "what does summarization destroy?", that is a week of analysis over traces you already own instead of $4,000 of new runs. Dropping the memory axis today should not mean losing the ability to answer it.</p>
+  </div>
+</section>
+
+<!-- ===== 01 ===== -->
+<section id="model" class="col">
+  <div class="sechead"><span class="secnum">01</span><h2>Which Gemini</h2></div>
+  <p class="subhead">this is the most consequential choice in the plan</p>
+
+  <p>The cheapest model is not the right model. The reliability axis needs a baseline pass rate away from both floor and ceiling — a strategy cannot lower a success rate that is already zero, and consistency is only measurable where outcomes actually vary. Published DeepSWE numbers make the choice for us:</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Model</th><th>DeepSWE pass@1</th><th>$/task</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr class="hi"><td class="mono">Gemini 3.5 Flash</td><td class="n">37%</td><td class="n">~$1–2 (est.)</td><td><b>Primary.</b> 37% is close to the statistically ideal operating point — maximum outcome variance, room to fall <em>and</em> rise, no ceiling compression. It is also the older generation, which makes it half of a free generational pair.</td></tr>
+        <tr><td class="mono">Gemini 3.7 Flash</td><td class="n">65.0% ±2</td><td class="n">$2.18</td><td>Second model, if budget allows. Newer generation → the trend result. Higher baseline means more ceiling compression on easy tasks.</td></tr>
+        <tr><td class="mono">Gemini 3.1 Flash-Lite</td><td class="n">not published</td><td class="n">~$0.25/M in · $0.025/M cached · $1.50/M out</td><td><span class="pill risk">risky</span> Cheapest by a wide margin, but no published DeepSWE score. If its real pass rate is ~10%, almost no task lands in the usable band and the study has no signal to measure. Use only as a fallback, and only after E1 confirms the band.</td></tr>
+        <tr><td class="mono">Gemini 2.5 Flash-Lite</td><td class="n">—</td><td class="n">$0.10 / $0.40 per M</td><td><span class="pill must">retiring 2026-10-16</span> Do not build on it. If you want it as a third generational point, you have roughly seven weeks.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">Recommendation</span>
+    <p><b>Primary = Gemini 3.5 Flash.</b> At 37% pass@1 it sits near the maximum of <code>p(1−p)</code>, which is exactly where a consistency effect is easiest to detect. Add <b>Gemini 3.7 Flash</b> as the second model only in tier C. Treat Flash-Lite as a cost fallback, not a starting point — saving $300 is a bad trade for a study with no measurable signal.</p>
+  </div>
+
+  <h3>Two properties of Gemini that shape the whole design</h3>
+  <div class="cards three">
+    <div class="card">
+      <h5>1M context window</h5>
+      <p>FULL is a <strong>true uncompacted control on every DeepSWE task</strong> — the longest run is ~276K, well inside the window. No overflow policy needed, no runs lost to the ceiling.</p>
+      <p>It also reframes the question: at 1M tokens the <em>only</em> reason to compact is money and latency. Which makes cost the primary axis.</p>
+    </div>
+    <div class="card">
+      <h5>Implicit caching, on by default</h5>
+      <p><span class="big">90%</span>discount on cached input, automatic for 2.5-and-newer models, minimum ~2K tokens. Nothing to enable.</p>
+      <p>No <code>cache_control</code> plumbing, unlike Anthropic — the cost axis becomes observable for free.</p>
+    </div>
+    <div class="card">
+      <h5>We set the budgets</h5>
+      <p>Because the window is 1M and we choose LOOSE/MEDIUM/TIGHT ourselves, <strong>task selection can prioritise solvability over length.</strong> A 40K-context task still compacts hard at a 16K budget.</p>
+      <p>This inverts the selection order from the frontier-model plan — and it is what makes a cheap model viable.</p>
+    </div>
+  </div>
+
+  <div class="note amb">
+    <span class="tag">Verify in E0 — a known failure mode</span>
+    <p>There are reports of <b>implicit caching not engaging on Gemini 3 Flash when tools are defined</b> in the request. We are probably safe: mini-swe-agent does not use native tool-calling — it asks the model to emit a bash block in plain text and parses it, so no tool schema is sent. But the entire cost axis rests on that, so <b>E0 checks the returned cached-token count before anything else runs.</b> If caching is not firing, find out on day one for $10, not in week six.</p>
+  </div>
+</section>
+
+<!-- ===== 02 ===== -->
+<section id="economics" class="col">
+  <div class="sechead"><span class="secnum">02</span><h2>The cost model — do this before you spend anything</h2></div>
+  <p class="subhead">an afternoon of arithmetic that predicts the whole cost axis</p>
+
+  <p>Agent input cost is not linear in run length — it is roughly quadratic, because every step re-sends the entire history. That single fact dominates everything, and with a 90% cache discount it produces a clean, testable prediction you can derive before making a single API call.</p>
+
+  <h4>The per-call cost</h4>
+  <div class="machine wide">
+    <div class="scroll"><pre><code>Let  p     = input price per token
+     0.1p  = cached input price          <span class="c"># Gemini implicit caching: 90% off</span>
+     L_t   = context length at step t
+     d_t   = new tokens appended since the previous call
+
+cost(call t)  =  0.1p · L_(t-1)   +   p · d_t   +   p_out · out_t
+                 ^^^ the cached prefix    ^^^ the new suffix
+
+FULL over n steps, context growing to L:
+     input ≈ p·L  +  0.1p · Σ L_t  ≈  p·L·(1 + 0.05n)
+     <span class="c"># each token is paid once at full price, then at 10% forever after</span></code></pre></div>
+  </div>
+
+  <h4>What a compaction costs and saves</h4>
+  <div class="machine wide">
+    <div class="scroll"><pre><code>A compaction rewrites the prefix -> the cache is void -> the next call pays
+FULL price on the whole new view V.
+
+     penalty  =  p · V            <span class="c"># = 10 x the cached rate on V</span>
+     saving   =  0.1p · (L - V)   per subsequent call
+
+Break-even in calls:   <span class="k">m* = 10V / (L - V)</span>
+
+     V = 32K,  L = 120K   ->  m* ≈ 3.6 calls
+     V = 64K,  L = 120K   ->  m* ≈ 11.4 calls
+     V = 32K,  L = 200K   ->  m* ≈ 1.9 calls</code></pre></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">The pre-registered cost prediction</span>
+    <p>Compactions are typically tens of calls apart, and <code>m*</code> is single-digit at a tight budget. So on Gemini, <b>compaction does reduce raw dollars</b> — monotonically as the budget tightens. The interesting quantity is therefore <b>not</b> raw cost. It is <b>cost-of-pass</b>: dollars ÷ probability correct. Raw cost falls; accuracy falls; the ratio has a minimum.</p>
+    <p style="margin-top:10px"><b>H-cost: cost-of-pass is U-shaped in the budget, with an interior minimum strictly below the NATIVE window.</b> That minimum is the operating point. It is falsifiable — if cost-of-pass is monotone decreasing, the right advice is "compact as hard as you can," and if monotone increasing, it is "never compact." Either would be a real finding.</p>
+  </div>
+
+  <h4>What this means for your bill</h4>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Arm</th><th>Relative input cost</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">FULL</td><td class="n">1.00×</td><td>longest histories, but every token is cached after its first appearance</td></tr>
+        <tr><td class="mono">LOOSE</td><td class="n">~0.7×</td><td>few compactions, shorter tails</td></tr>
+        <tr><td class="mono">TIGHT</td><td class="n">~0.4×</td><td>many compactions, but each view is small — plus summarizer calls, which you must add in</td></tr>
+        <tr><td class="mono">PRUNE</td><td class="n">~0.35×</td><td>same shrinkage, <b>no summarizer calls at all</b> — the cheapest arm by construction, and therefore the one to beat</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p><strong>Budget consequence:</strong> your treatment runs are cheaper than your control runs. The grid costs less than <span class="num">runs × FULL-price</span>, which is the opposite of the usual situation and worth a line in the paper.</p>
+
+  <div class="note amb">
+    <span class="tag">Not included in any dollar figure here</span>
+    <p><b>Sandbox compute.</b> Modal charges for container time and is not part of the API estimates. Local <code>--env docker</code> is free but serial: 800 runs at ~25 minutes each is <b>two weeks</b> of wall clock. Run 4–8 containers in parallel locally (2–4 days), or accept Modal's compute line item. Decide this in E0 — it is a schedule constraint, not a budget one.</p>
+  </div>
+</section>
+
+<!-- ===== 03 ===== -->
+<section id="design" class="col">
+  <div class="sechead"><span class="secnum">03</span><h2>The lean design</h2></div>
+  <p class="subhead">four strategies, three budgets, one control — nothing else</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Factor</th><th>Levels</th><th>Serves</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">S strategy</td><td class="mono">FULL · PRUNE · SUMMARIZE · RETRIEVE · SUMMARIZE_T0</td><td>all three axes; T0 defends reliability</td></tr>
+        <tr><td class="mono">B budget</td><td class="mono">NATIVE · LOOSE · MEDIUM · TIGHT</td><td>the knob — set by E2 from measured data</td></tr>
+        <tr><td class="mono">T task</td><td>~15 in-band tasks, from a ~40-task screen</td><td>selection is the study's biggest risk — §05 E3</td></tr>
+        <tr><td class="mono">K seed</td><td class="mono">0–4</td><td>reliability. 0–9 on a subset in tier B+</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <h4>Why each arm is in or out</h4>
+  <ul>
+    <li><strong>FULL</strong> — the control, and on a 1M window it is a genuine one for every task.</li>
+    <li><strong>SUMMARIZE</strong> — the suspect.</li>
+    <li><strong>RETRIEVE</strong> — the comparator the headline is measured against. Must be strong: query on the current subgoal, hybrid BM25 + embedding, pin recent turns and every turn containing a file write, tuned on a disjoint dev slice and then frozen.</li>
+    <li><strong>PRUNE</strong> — kept, and it earns its place on the <em>cost</em> axis specifically: it shrinks context with zero summarizer calls and zero embedding calls, so it is the cheapest possible strategy and the floor any clever method must beat.</li>
+    <li><strong>SUMMARIZE_T0</strong> — kept at TIGHT only. It is the answer to "your variance is just the extra stochastic call," which is the first thing anyone will say about the reliability claim. Cheap insurance.</li>
+    <li><strong>EXTRACTIVE</strong> — <span class="pill">cut</span> it isolates <em>rewriting</em> from <em>shrinking</em>, which is a memory-mechanism question. Comes back with the probes.</li>
+    <li><strong>FILES</strong> — <span class="pill">cut</span> changes the tool surface, so it is not a pure context intervention.</li>
+  </ul>
+
+  <div class="note acc">
+    <span class="tag">Pairing is not optional</span>
+    <p>With ~15 tasks, every comparison is <b>within-task</b>: same task, same seed, SUMMARIZE vs RETRIEVE at the same budget. Bootstrap resamples <em>tasks</em>, 10,000 draws. A between-task comparison at this N is a shrug with error bars.</p>
+  </div>
+</section>
+
+<!-- ===== 04 ===== -->
+<section id="record" class="col">
+  <div class="sechead"><span class="secnum">04</span><h2>What to record</h2></div>
+  <p class="subhead">trimmed to the three axes — plus the two columns that keep your options open</p>
+
+  <div class="machine wide">
+    <div class="machine-label">runs.parquet — one row per trial</div>
+    <div class="scroll"><pre><code><span class="c"># identity</span>
+run_id, task_id, repo, language, started_at
+strategy, budget_level, budget_tokens, model_id, model_date, seed
+retriever_cfg_hash, slot_prompt_hash, harness_commit, benchmark_commit, image_digest
+
+<span class="c"># SUCCESS</span>
+reward                    <span class="c"># DeepSWE's verifier, untouched</span>
+ctrf_pass_fraction        <span class="c"># assertions passed / total -> GRADED signal, not just 0/1</span>
+exit_reason               <span class="c"># submitted | step_limit | cost_limit | timeout | error</span>
+steps, tool_calls, tool_errors, wall_ms
+
+<span class="c"># COST</span>
+tokens_in, tokens_out, thinking_tokens
+cached_input_tokens       <span class="c"># <-- THE cost axis. Verify it is non-zero in E0.</span>
+agent_cost_usd, summarizer_cost_usd, embedding_cost_usd, total_cost_usd
+compactions, first_compaction_step
+peak_view_tokens, peak_log_tokens
+
+<span class="c"># keeps the memory axis available later, for free</span>
+note_texts                <span class="c"># every summary the model produced, verbatim</span></code></pre></div>
+  </div>
+
+  <div class="machine wide">
+    <div class="machine-label">steps.parquet — one row per model call</div>
+    <div class="scroll"><pre><code>run_id, step_idx, view_tokens, log_tokens
+tokens_in, cached_input_tokens, tokens_out, thinking_tokens
+compaction_fired, note_tokens, latency_ms, obs_tokens, tool_error</code></pre></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">The cheap-model bonus: partial credit</span>
+    <p><code>ctrf.json</code> reports <b>per-assertion</b> results, so even a failing run yields a graded score. On a 37%-pass model most runs fail, and a binary outcome throws away almost all the information in them. <b>Use <code>ctrf_pass_fraction</code> as a secondary continuous outcome</b> — it is far more sensitive at low pass rates, and it is free. Keep <code>reward</code> as the pre-registered primary so the headline stays comparable to the leaderboard.</p>
+  </div>
+</section>
+
+<!-- ===== 05 ===== -->
+<section id="runs" class="col">
+  <div class="sechead"><span class="secnum">05</span><h2>The run order</h2></div>
+  <p class="subhead">eight experiments · three cost nothing</p>
+
+  <div class="phase"><b>Phase A</b> · calibrate — days 1–4</div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E0</span><span class="exp-name">Smoke &amp; cache check</span>
+      <span class="exp-meta"><span class="pill must">blocking</span><span class="pill">6 runs · ~$10</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Does our agent run through Pier on Gemini — and <em>is implicit caching actually firing?</em></div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">Pier integration path A (fork mini-swe-agent) vs B (litellm proxy). 3 tasks each.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val"><code>S=FULL</code>, <code>B=NATIVE</code>, seed 0.</div></div>
+      <div class="row"><div class="lab">How</div><div class="val">
+        <div class="scroll" style="margin-top:4px"><pre><code>git clone https://github.com/datacurve-ai/deep-swe
+uv tool install git+https://github.com/datacurve-ai/pier
+export GEMINI_API_KEY=...
+
+pier run -p deep-swe/tasks --agent mini-swe-agent \
+         --model gemini/gemini-3.5-flash \
+         --n-tasks 3 --sample-seed 0 --env docker</code></pre></div>
+        <p style="margin-top:8px">Then inspect the sidecar: <code>cached_input_tokens</code> must be non-zero from roughly step 3 onward. Also confirm the exact litellm model id and that <code>thinking_tokens</code> are reported and billed as output.</p>
+      </div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>3/3 green on one path AND <code>cached_input_tokens &gt; 0</code>.</b> If caching is not firing, check whether a tool schema is being sent (the known Gemini 3 Flash failure mode) and remove it. If it still does not fire, the cost axis degrades from <em>measured</em> to <em>modelled</em> — recoverable, but you must know now.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E1</span><span class="exp-name">Length probe</span>
+      <span class="exp-meta"><span class="pill">40 runs · ~$60</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">How long does a Gemini-Flash DeepSWE run actually get, and what does one cost?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>T</code> = a 40-task deterministic sample: <code>--n-tasks 40 --sample-seed 0</code>.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val"><code>S=FULL</code>, <code>B=NATIVE</code>, seed 0.</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">
+        <ul>
+          <li><code>peak_view_tokens</code> per task → p10/p25/p40/p50/p75/p90 — this sets the budget grid</li>
+          <li>head floor: system template + <code>instruction.md</code> tokens</li>
+          <li><b>measured cost per FULL run</b>, and the realised cache-hit ratio → replaces every estimate on this page</li>
+          <li>steps, thinking-token share, wall clock</li>
+          <li><code>ctrf_pass_fraction</code> per task → the screening signal for E3</li>
+        </ul>
+      </div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>At least 25 tasks with peak context ≥ 3× the head floor.</b> Below that, a TIGHT budget cannot leave meaningful history and the study degenerates. If it fails, widen the sample to all 113 (+$110) before changing anything else.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E2</span><span class="exp-name">Replay budget calibration</span>
+      <span class="exp-meta"><span class="pill free">$0</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Which three budget values actually create compaction pressure?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">Candidate budget swept every 4K from 8K to 200K, replayed offline through <code>build_view()</code> against E1's trajectories. No model calls.</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">Compactions per task per candidate; realised view sizes; how often the recent-overflow guard trips; predicted cost per arm from the §02 model.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>LOOSE ≈ p75 of peak context</b> (≥30% of tasks compact at least once) · <b>MEDIUM ≈ p40</b> · <b>TIGHT ≈ p15, floored at 2.5× the head</b> (≥80% compact ≥3×, median view still carries ≥1.5× the head in real history). If no triple satisfies all of it, go back to task selection, not to the grid.</div></div>
+    </div>
+  </div>
+
+  <div class="phase"><b>Phase B</b> · select and freeze — days 5–9</div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E3</span><span class="exp-name">FULL census — control, selection and reproduction in one</span>
+      <span class="exp-meta"><span class="pill must">the risk</span><span class="pill">120 runs · ~$180</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Which tasks does this model solve <em>sometimes</em> — and do our FULL numbers match the published leaderboard?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>seed</code> ∈ {1,2,3} on the same 40 tasks (seed 0 already exists from E1) → K=4 at FULL.</div></div>
+      <div class="row"><div class="lab">Why one experiment</div><div class="val">These runs do triple duty: the <b>control arm</b> of the study, the <b>baseline census</b> for task selection, and the <b>reproduction check</b>. Running them once instead of three times is most of the savings in this plan.</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">
+        <p>Per-task pass rate ∈ {0, .25, .5, .75, 1}. <b>Selection: keep tasks with pass rate in [0.25, 0.75]</b>, then prefer the longest among them. Target <b>15</b>; the 8 nearest 0.5 become the variance subset.</p>
+        <p>Pooled pass@1 ± 1.96 SE against the published figure for this model.</p>
+      </div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">
+        <p><b>≥10 tasks in the band (target 15), and the reproduction CI overlaps the published score.</b></p>
+        <p><b>If fewer than 10 land in the band</b> — the most likely way this study fails — the model is too weak for this benchmark. In order: (1) screen the remaining 73 tasks at K=4 <span class="pill">+$110</span>; (2) step up to Gemini 3.7 Flash, whose 65% baseline puts far more tasks in range <span class="pill">+~2× cost</span>; (3) only then reconsider the benchmark. <b>Do not</b> proceed with 6 tasks and hope.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E4</span><span class="exp-name">Symmetric dev-tuning</span>
+      <span class="exp-meta"><span class="pill risk">fairness</span><span class="pill">40 runs · ~$40</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">What is the best version of SUMMARIZE and of RETRIEVE we can build with <em>equal</em> effort, before either touches the study tasks?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">RETRIEVE: chunking, scorer (BM25 / embedding / hybrid α), pin policy. SUMMARIZE: the <code>SLOT_PROMPT</code> field set.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">A <b>4-task dev slice disjoint from the 15</b>, drawn from the in-band pool. Equal wall-clock tuning budget for both arms, agreed in advance.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val">Offline scoring sweep (free) → online check: <span class="num">4 tasks × TIGHT × 2 arms × K=5 = 40 runs</span></div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>Both configs frozen and hashed the same day</b>, hashes written to every later run. Tuning one arm and not the other is the criticism that lands hardest, because the headline <em>is</em> summarize-versus-retrieve.</div></div>
+    </div>
+  </div>
+
+  <div class="phase"><b>Phase C</b> · the grid — days 10–20</div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E5</span><span class="exp-name">Main grid</span>
+      <span class="exp-meta"><span class="pill">450 runs · ~$315</span><span class="pill done">the paper</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">All three axes across the budget sweep: where does success break, where does consistency break, and where is cost-of-pass minimised?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>S</code> ∈ {PRUNE, SUMMARIZE, RETRIEVE} × <code>B</code> ∈ {LOOSE, TIGHT} × <code>T</code> = 15 × <code>seed</code> ∈ 0–4.
+      <p style="margin-top:6px">Tier C adds MEDIUM: <span class="num">+225 runs</span> — this is what turns three points into a curve.</p></div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">Model, frozen E4 configs, identical <code>step_limit</code> / <code>cost_limit</code> / <code>wall_time</code> across every arm, summarizer and embedding cost counted into the arm's own total.</div></div>
+      <div class="row"><div class="lab">How</div><div class="val">
+        <div class="scroll" style="margin-top:4px"><pre><code><span class="c"># run TIGHT first — it carries the primary contrast</span>
+<span class="k">for</span> budget <span class="k">in</span> [TIGHT, LOOSE]:
+    <span class="k">for</span> strat <span class="k">in</span> [<span class="s">"SUMMARIZE"</span>, <span class="s">"RETRIEVE"</span>, <span class="s">"PRUNE"</span>]:
+        <span class="k">for</span> task <span class="k">in</span> STUDY_15:
+            <span class="k">for</span> seed <span class="k">in</span> range(5):
+                launch(task, strat, budget, seed)   <span class="c"># 4-8 parallel containers</span></code></pre></div>
+      </div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>Run TIGHT before LOOSE.</b> If you run out of money or time, the pre-registered primary comparison is already complete. Health check after the TIGHT block: truncation &lt;15% in every arm, no arm costing more than 3× another. If either fails, stop and diagnose before spending the rest.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E6</span><span class="exp-name">Determinism control</span>
+      <span class="exp-meta"><span class="pill">75 runs · ~$50</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Is the consistency gap just the extra stochastic summarizer call?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>S=SUMMARIZE_T0</code> (summarizer at temperature 0) × <code>B=TIGHT</code> × 15 tasks × seeds 0–4.</div></div>
+      <div class="row"><div class="lab">Also do</div><div class="val"><b>100 free-standing summarizer calls</b> (20 repeats × 5 real payloads from E1) to measure the actual t=0 exact-match rate. Costs pennies. If it is 85%, the paper says 85% and calls the arm "reduced-stochasticity," not "deterministic" — a claim you did not verify is a one-afternoon falsification.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">No stop condition. <b>If the gap survives at t=0, the reliability claim is about compaction itself, not about adding a random call.</b> That is the single most valuable defensive number in the study.</div></div>
+    </div>
+  </div>
+
+  <div class="phase"><b>Phase D</b> · harden — days 21–25</div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E7</span><span class="exp-name">Variance deepening</span>
+      <span class="exp-meta"><span class="pill">120 runs · ~$80</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Does the consistency gap survive when K doubles — or was it an artefact of five seeds?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>seed</code> ∈ 5–9 on the 8-task variance subset × {FULL, SUMMARIZE, RETRIEVE} × TIGHT.</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">all@10 and the Δ gap at K=10; stability of C_out between K=5 and K=10.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>Sign and rough magnitude must survive.</b> If the effect halves when K doubles, report it — a consistency claim that is itself unstable across seed counts is a finding about the method, and concealing it is how a paper gets retracted rather than rejected. <em>This is the cheapest insurance in the plan: 120 runs to protect the headline.</em></div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top"><span class="exp-id">E8</span><span class="exp-name">Cost re-pricing</span>
+      <span class="exp-meta"><span class="pill free">$0</span><span class="pill done">free headline</span></span></div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Under which billing regimes does the ranking change — and where exactly is the cost-of-pass minimum?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">Regime: <b>observed</b> (the real bill) · <b>no-cache</b> · <b>batch</b> (−50%, hypothetical for an interactive loop) · <b>cold</b> (a user who returns hourly and never hits the implicit cache).</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">cost-of-pass per arm per budget per regime; the accuracy-vs-cost Pareto; the fitted minimum of the U with a bootstrap CI on its location. <b>That location is the paper's headline number.</b></div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">Runs only if <code>cached_input_tokens</code> was logged from E0 onward. Two columns in week one; the whole cost axis in week four.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 06 ===== -->
+<section id="tiers" class="col">
+  <div class="sechead"><span class="secnum">06</span><h2>Three budgets, pick one</h2></div>
+  <p class="subhead">figures assume ~$1.50 per FULL run and ~$0.70 per treatment run — E1 replaces both</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th></th><th>Tier A · does it move?</th><th>Tier B · the curve</th><th>Tier C · the trend</th></tr></thead>
+      <tbody>
+        <tr><th>Tasks</th><td class="n">10</td><td class="n">15</td><td class="n">15</td></tr>
+        <tr><th>Budgets</th><td class="n">TIGHT only</td><td class="n">LOOSE + TIGHT</td><td class="n">LOOSE + MED + TIGHT</td></tr>
+        <tr><th>Strategies</th><td class="n">SUM, RET</td><td class="n">+ PRUNE, T0</td><td class="n">+ PRUNE, T0</td></tr>
+        <tr><th>Seeds</th><td class="n">5</td><td class="n">5 (10 on 8 tasks)</td><td class="n">5 (10 on 8 tasks)</td></tr>
+        <tr><th>Models</th><td class="n">1</td><td class="n">1</td><td class="n">2 (3.5 + 3.7 Flash)</td></tr>
+        <tr><th>Runs</th><td class="n">~256</td><td class="n">~826</td><td class="n">~1,430</td></tr>
+        <tr class="hi"><th>API cost</th><td class="n">≈ $260</td><td class="n">≈ $700</td><td class="n">≈ $1,230</td></tr>
+        <tr><th>Wall clock</th><td class="n">3–5 days</td><td class="n">2–3 weeks</td><td class="n">4–5 weeks</td></tr>
+        <tr><th>You get</th>
+          <td>One paired contrast at one budget. Success, reliability and cost all measured — but no curve, so no operating point.</td>
+          <td><b>The full claim.</b> Budget curve, the consistency gap with its t=0 defence, the cost-of-pass U and its minimum. A complete short paper.</td>
+          <td>Tier B plus a three-point curve and the generational comparison: <em>does compaction damage shrink as models improve?</em></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">Recommendation</span>
+    <p><b>Start with Tier A's runs but Tier B's schema.</b> Every run in Tier A is a subset of Tier B — same tasks, same seeds, same logging — so nothing is thrown away when you extend. Spend $260, look at the TIGHT contrast, and decide whether the next $440 is worth it with real data in hand rather than in advance. <b>The one thing you cannot retrofit is the logging</b>, so write the full schema from E0.</p>
+  </div>
+
+  <h3>Cut in this order if money runs short</h3>
+  <ol>
+    <li>MEDIUM budget → the curve becomes three points instead of four. <span class="pill">−225 runs</span></li>
+    <li>Second model → lose the trend, keep everything else. <span class="pill">−600</span></li>
+    <li>E7 variance deepening → but this is the cheapest insurance you have; cut it last. <span class="pill">−120</span></li>
+    <li>PRUNE arm → lose the cost floor comparison. <span class="pill">−150</span></li>
+    <li>Tasks 15 → 10. Cut this before cutting seeds: <b>the reliability axis is bought with K, not with tasks.</b></li>
+  </ol>
+</section>
+
+<!-- ===== 07 ===== -->
+<section id="plot" class="col">
+  <div class="sechead"><span class="secnum">07</span><h2>The three analyses, and the one plot</h2></div>
+  <p class="subhead">what each axis produces and how they combine</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Axis</th><th>Statistic</th><th>From</th><th>Shape you expect</th></tr></thead>
+      <tbody>
+        <tr><td><b>Success</b></td><td>reward vs budget, paired; secondary <code>ctrf_pass_fraction</code></td><td class="mono">E3, E5</td><td>flat then falling — the knee is the interesting part</td></tr>
+        <tr><td><b>Reliability</b></td><td>Δ = pass¹ − all@5; contrast Δ(SUM) − Δ(RET) at TIGHT; C_out</td><td class="mono">E5, E6, E7</td><td>gap widens as the budget tightens, faster than the mean falls</td></tr>
+        <tr><td><b>Cost</b></td><td>raw $/run; <b>cost-of-pass = $ ÷ P(correct)</b>; cache-hit rate around compactions</td><td class="mono">E5, E8</td><td>raw cost monotone down; <b>cost-of-pass U-shaped</b></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">The figure the paper is built around</span>
+    <p>One plot. X-axis: context budget, tight → loose. Three normalised curves: <b>success</b>, <b>consistency (all@5)</b>, and <b>cost-of-pass inverted</b>. Shade the band where cost-of-pass is within its bootstrap CI of the minimum. <b>That shaded band is the recommended operating range</b> — and it is the thing an engineer pins on the wall. Every experiment in §05 exists to draw it.</p>
+  </div>
+
+  <h4>Standing rules</h4>
+  <ul>
+    <li><strong>Everything paired</strong>, bootstrap over tasks, 10,000 draws.</li>
+    <li><strong>Exclusions:</strong> <code>error</code> excluded and its rate reported; <code>step_limit</code> / <code>cost_limit</code> / <code>timeout</code> scored <code>reward=0</code> and reported as per-arm rates.</li>
+    <li><strong>One primary endpoint</strong> (§08). Everything else is secondary and labelled so; Holm within families.</li>
+    <li><strong>Model</strong> (if it converges at this N): <code>reward ~ strategy * budget + log_steps + (1|task)</code>. At 15 tasks, report the paired bootstrap as primary and the mixed model as support — not the other way round.</li>
+  </ul>
+</section>
+
+<!-- ===== 08 ===== -->
+<section id="prereg" class="col">
+  <div class="sechead"><span class="secnum">08</span><h2>The pre-registration</h2></div>
+  <p class="subhead">filed after E3 selection and E4 freezing, before E5 — two hypotheses, both falsifiable</p>
+
+  <div class="machine wide">
+    <div class="scroll"><pre><code>SETTING   DeepSWE, 15-task subset (selection: FULL-arm pass rate in [0.25,0.75]
+          at K=4, then longest-first — fixed after E3), Gemini 3.5 Flash,
+          K = 5 seeds, budget levels fixed by E2 before any treatment run.
+
+DEFINE    pass1(A) = mean reward over runs of arm A
+          all@5(A) = fraction of tasks where A succeeds on all 5 seeds
+          <span class="k">Delta(A) = pass1(A) - all@5(A)</span>
+          <span class="k">cop(A,B) = mean cost per run / pass1  </span>  <span class="c"># dollars per correct answer</span>
+
+<span class="k">H1  RELIABILITY</span>   Delta(SUMMARIZE) - Delta(RETRIEVE) &gt; 0  at TIGHT
+    one-sided, alpha = .025, task-level bootstrap, 10,000 resamples.
+    Co-primary condition: CI for pass1(SUM) - pass1(RET) <span class="k">includes 0</span>.
+    <span class="c"># "same average, worse consistency" — both halves must hold</span>
+
+<span class="k">H2  COST</span>          cop(SUMMARIZE, B) is U-shaped in B, with an interior
+    minimum strictly below NATIVE. Tested by fitting cop across
+    {NATIVE, LOOSE, (MED), TIGHT} and bootstrapping the argmin location.
+    <span class="c"># falsified if cop is monotone in either direction — which would</span>
+    <span class="c"># itself be the practical answer: "always compact" or "never compact"</span>
+
+SECONDARY C_out; ctrf_pass_fraction as a graded success measure; raw cost
+          per arm; cache-hit rate around compaction events; PRUNE as the
+          zero-overhead cost floor; strategy x budget interaction.
+
+FROZEN    retriever_cfg_hash, slot_prompt_hash, budget grid, task subset,
+          exclusion rules, K, price table date.
+          Later changes are reported as dated deviations.</code></pre></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">Why the endpoint is a gap, not a variance ratio</span>
+    <p>For binary outcomes, mean within-task variance is <code>E[p(1−p)] = m − m² − Var<sub>tasks</sub>(p)</code>, bounded above by <b>0.25</b> and reaching it only if every task is exactly a coin flip. A pre-registered "≥2× the variance at equal means" would commit you to something close to mathematically unsatisfiable even if you are entirely right. The <code>pass¹ − all@k</code> gap says the same thing with no ceiling — and it is the form a practitioner can act on: <em>how often does a task that usually works fail this time?</em></p>
+  </div>
+</section>
+
+<!-- ===== 09 ===== -->
+<section id="fail" class="col">
+  <div class="sechead"><span class="secnum">09</span><h2>When a gate fails</h2></div>
+  <p class="subhead">decided now, so it is not decided under pressure later</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Failure</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td><b>E0</b> caching not firing</td><td>Check for a tool schema in the request and remove it. If it still does not fire, the cost axis becomes <em>modelled</em> rather than <em>measured</em> — still publishable via the §02 arithmetic, but say so explicitly.</td></tr>
+        <tr><td><b>E1</b> runs are short</td><td>Widen the sample to all 113 (+$110). If contexts genuinely stay small, lower the budgets further — the 1M window means you have room to make the budget bite wherever you like.</td></tr>
+        <tr><td><b>E3</b> fewer than 10 in-band tasks <span class="pill must">most likely failure</span></td><td>In order: screen the remaining 73 tasks (+$110) → step up to Gemini 3.7 Flash (65% baseline, ~2× cost) → only then reconsider the benchmark. Do not run the study on 6 tasks.</td></tr>
+        <tr><td><b>E3</b> reproduction check fails</td><td>Stop. If our FULL numbers do not sit on the published CI, our harness differs from theirs and nothing downstream is interpretable.</td></tr>
+        <tr><td><b>E5</b> no reliability effect</td><td>Check the cost axis before concluding anything. H2 is independent of H1 — a clean cost-of-pass minimum is a publishable result on its own, and it is the one engineers will actually use.</td></tr>
+        <tr><td><b>E5</b> summarize <em>beats</em> retrieve</td><td>Report it. Then check whether it wins on cost-of-pass too. Three axes means any direction is a result.</td></tr>
+        <tr><td><b>E6</b> the gap vanishes at t=0</td><td>Then the variance came from the extra call, not from compaction. That is a genuine negative for H1 — and still worth writing, because everyone assumes otherwise.</td></tr>
+        <tr><td><b>E7</b> effect halves at K=10</td><td>Report the K-dependence as a finding about measuring agent reliability.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="argument">
+    Three of the eight experiments cost nothing — the replay calibration, the summarizer-determinism check, and the re-pricing. Between them they set the budget grid, defend the headline, and produce the cost result. <em>Run the free ones first, and run them properly.</em>
+  </div>
+</section>
+
+<footer class="col">
+  GAIA research · DeepSWE lean track · volume IV. Supersedes volume III where they disagree.<br>
+  Model scores and prices are from published DeepSWE leaderboard figures and Gemini API pricing as of August 2026; verify both against current docs before committing, and freeze a price-table date.<br>
+  Run counts follow arithmetically from the factor levels in §03. Cost bands assume ~$1.50 per FULL run and ~$0.70 per treatment run and are replaced by measured values the day E1 lands. Sandbox compute is not included.
+</footer>
+
+</div>

@@ -1,0 +1,869 @@
+<title>DeepSWE Run Order</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+
+<style>
+:root{
+  --ground:#F6F8F7;--surface:#FFFFFF;--surface-2:#EDF2F0;
+  --line:#D5DEDB;--line-soft:#E4EBE9;
+  --ink:#111C1A;--ink-2:#3A4B48;--muted:#5F716E;
+  --accent:#0F8F70;--accent-soft:rgba(15,143,112,.10);--accent-line:rgba(15,143,112,.32);
+  --amber:#9A6A18;--amber-soft:rgba(154,106,24,.10);--amber-line:rgba(154,106,24,.30);
+  --alert:#B4453B;--alert-soft:rgba(180,69,59,.09);--alert-line:rgba(180,69,59,.28);
+  --violet:#5B4B9E;--violet-soft:rgba(91,75,158,.10);--violet-line:rgba(91,75,158,.28);
+  --code-bg:#F0F4F2;
+  --f-sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --f-serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --col:min(74ch,100%);--wide:min(1140px,100%);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1417;--surface:#141D21;--surface-2:#18242A;
+    --line:#25343A;--line-soft:#1D2A2F;
+    --ink:#DEE7E5;--ink-2:#B4C3C0;--muted:#83958F;
+    --accent:#45C8A2;--accent-soft:rgba(69,200,162,.10);--accent-line:rgba(69,200,162,.30);
+    --amber:#D9A45B;--amber-soft:rgba(217,164,91,.10);--amber-line:rgba(217,164,91,.28);
+    --alert:#E4796C;--alert-soft:rgba(228,121,108,.10);--alert-line:rgba(228,121,108,.28);
+    --violet:#A798E8;--violet-soft:rgba(167,152,232,.10);--violet-line:rgba(167,152,232,.28);
+    --code-bg:#101A1E;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1417;--surface:#141D21;--surface-2:#18242A;
+  --line:#25343A;--line-soft:#1D2A2F;
+  --ink:#DEE7E5;--ink-2:#B4C3C0;--muted:#83958F;
+  --accent:#45C8A2;--accent-soft:rgba(69,200,162,.10);--accent-line:rgba(69,200,162,.30);
+  --amber:#D9A45B;--amber-soft:rgba(217,164,91,.10);--amber-line:rgba(217,164,91,.28);
+  --alert:#E4796C;--alert-soft:rgba(228,121,108,.10);--alert-line:rgba(228,121,108,.28);
+  --violet:#A798E8;--violet-soft:rgba(167,152,232,.10);--violet-line:rgba(167,152,232,.28);
+  --code-bg:#101A1E;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-sans);
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.page{display:flex;flex-direction:column;align-items:center;padding:0 20px 96px}
+.col{width:var(--col)}
+.wide{width:var(--wide)}
+
+.topbar{position:sticky;top:0;z-index:20;width:100%;
+  background:color-mix(in srgb,var(--ground) 92%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line-soft)}
+.topbar-in{max-width:1140px;margin:0 auto;padding:11px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.wordmark{font-family:var(--f-mono);font-weight:600;font-size:13px;letter-spacing:.06em}
+.wordmark span{color:var(--accent)}
+.topnav{display:flex;gap:14px;flex-wrap:wrap;margin-left:auto}
+.topnav a{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;color:var(--muted);
+  text-decoration:none;padding:2px 0;border-bottom:1px solid transparent}
+.topnav a:hover,.topnav a:focus-visible{color:var(--accent);border-bottom-color:var(--accent-line)}
+
+.hero{padding:56px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px}
+.chip{font-family:var(--f-mono);font-size:11px;letter-spacing:.03em;padding:4px 10px;
+  border:1px solid var(--line);border-radius:2px;color:var(--muted);background:var(--surface)}
+.chip.on{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 10px}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.08;letter-spacing:-.022em;font-weight:600;
+  margin:0 0 20px;text-wrap:balance}
+.lede{font-size:17.5px;color:var(--ink-2);margin:0 0 8px}
+.lede strong{color:var(--ink);font-weight:600}
+
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+  border:1px solid var(--line);border-radius:3px;background:var(--surface);
+  margin:34px 0 8px;overflow:hidden}
+.strip div{padding:13px 16px;border-right:1px solid var(--line-soft)}
+.strip div:last-child{border-right:0}
+.strip dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 4px}
+.strip dd{margin:0;font-size:14px;font-weight:500}
+
+section{padding:52px 0 8px;border-top:1px solid var(--line-soft);margin-top:44px}
+section:first-of-type{border-top:0;margin-top:0}
+.sechead{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+.secnum{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.06em}
+h2{font-size:clamp(21px,2.6vw,27px);line-height:1.2;letter-spacing:-.015em;font-weight:600;margin:0;text-wrap:balance}
+.subhead{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);letter-spacing:.03em;
+  margin:0 0 26px;padding-left:40px}
+h3{font-size:17px;font-weight:600;letter-spacing:-.008em;margin:32px 0 10px;text-wrap:balance}
+h4{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;margin:26px 0 8px}
+p{margin:0 0 15px}
+ul,ol{margin:0 0 15px;padding-left:20px}
+li{margin:0 0 7px}
+li::marker{color:var(--muted)}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line)}
+a:hover,a:focus-visible{border-bottom-color:var(--accent)}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--code-bg);
+  border:1px solid var(--line-soft);border-radius:2px;padding:1px 5px}
+.num{font-variant-numeric:tabular-nums}
+
+.argument{font-family:var(--f-serif);font-size:18px;line-height:1.6;color:var(--ink);
+  border-left:2px solid var(--accent);padding:4px 0 4px 22px;margin:26px 0}
+
+.note{border:1px solid var(--line);border-left-width:3px;border-radius:3px;background:var(--surface);
+  padding:15px 18px;margin:24px 0;font-size:14.5px;color:var(--ink-2)}
+.note b{color:var(--ink)}
+.note .tag{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  display:block;margin-bottom:6px}
+.note.acc{border-left-color:var(--accent);background:var(--accent-soft)}
+.note.acc .tag{color:var(--accent)}
+.note.amb{border-left-color:var(--amber);background:var(--amber-soft)}
+.note.amb .tag{color:var(--amber)}
+.note.alr{border-left-color:var(--alert);background:var(--alert-soft)}
+.note.alr .tag{color:var(--alert)}
+.note p:last-child{margin-bottom:0}
+
+.machine{margin:22px 0}
+.machine-label{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:0 0 7px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+pre{margin:0;padding:16px 18px;font-family:var(--f-mono);font-size:12.5px;line-height:1.66;
+  color:var(--ink-2);white-space:pre}
+pre .c{color:var(--muted)}
+pre .k{color:var(--accent)}
+pre .s{color:var(--amber)}
+pre .w{color:var(--alert)}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;background:var(--surface-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.mono,th.mono{font-family:var(--f-mono);font-size:12.5px}
+
+.pill{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border-radius:2px;border:1px solid var(--line);color:var(--muted);
+  white-space:nowrap;display:inline-block}
+.pill.must{color:var(--alert);border-color:var(--alert-line);background:var(--alert-soft)}
+.pill.risk{color:var(--amber);border-color:var(--amber-line);background:var(--amber-soft)}
+.pill.done{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+.pill.free{color:var(--violet);border-color:var(--violet-line);background:var(--violet-soft)}
+
+/* ---- experiment cards ---- */
+.phase{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);display:flex;align-items:center;gap:12px;margin:44px 0 4px;
+}
+.phase::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+.phase b{color:var(--accent);font-weight:600}
+
+.exp{border:1px solid var(--line);border-radius:3px;background:var(--surface);margin:18px 0;overflow:hidden}
+.exp-top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  padding:14px 18px;border-bottom:1px solid var(--line-soft);background:var(--surface-2)}
+.exp-id{font-family:var(--f-mono);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.04em}
+.exp-name{font-size:16px;font-weight:600;letter-spacing:-.008em}
+.exp-meta{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.exp-body{padding:6px 18px 16px}
+.exp-body p{font-size:14.5px;color:var(--ink-2)}
+.exp-body ul{font-size:14.5px;color:var(--ink-2)}
+.row{display:grid;grid-template-columns:104px 1fr;gap:14px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.row:last-child{border-bottom:0}
+.row .lab{font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);padding-top:3px}
+.row .val{font-size:14.5px;color:var(--ink-2)}
+.row .val p{margin:0 0 8px}
+.row .val p:last-child{margin:0}
+.row .val ul{margin:0;padding-left:18px}
+.row.gate .lab{color:var(--accent)}
+.row.gate .val{color:var(--ink)}
+.row.gate .val b{color:var(--accent)}
+
+.kv{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.kv b{color:var(--ink-2);font-weight:500}
+
+hr.soft{border:0;border-top:1px solid var(--line-soft);margin:34px 0}
+footer{width:var(--col);margin-top:64px;padding-top:22px;border-top:1px solid var(--line-soft);
+  font-family:var(--f-mono);font-size:11px;color:var(--muted);line-height:1.7}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:640px){
+  .subhead{padding-left:0}
+  .row{grid-template-columns:1fr;gap:4px}
+  .strip div{border-right:0;border-bottom:1px solid var(--line-soft)}
+  .exp-meta{margin-left:0;width:100%}
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="wordmark">DEEPSWE<span>·</span>RUN ORDER</div>
+    <nav class="topnav">
+      <a href="#anatomy">Anatomy</a>
+      <a href="#factors">Factors</a>
+      <a href="#record">Record</a>
+      <a href="#assign">Assignment</a>
+      <a href="#order">The runs</a>
+      <a href="#totals">Totals</a>
+      <a href="#analysis">Analysis</a>
+      <a href="#prereg">Pre-reg</a>
+    </nav>
+  </div>
+</div>
+
+<div class="page">
+
+<div class="col hero">
+  <div class="chips">
+    <span class="chip on">14 experiments</span>
+    <span class="chip">E0 → E13, dependency-ordered</span>
+    <span class="chip">4 are free</span>
+    <span class="chip">1 gate at E6</span>
+  </div>
+  <p class="eyebrow">Companion to the GAIA Project Handbook · volume III</p>
+  <h1>Every experiment, in the order you run it</h1>
+  <p class="lede">The runbook says what the study is. This says <strong>what you execute, on which day, with which knob at which value</strong> — and what number tells you whether to run the next one. Fourteen experiments. Four cost nothing. One decides whether the other nine happen.</p>
+
+  <dl class="strip">
+    <div><dt>Agent runs</dt><dd>≈ 5,200 full</dd></div>
+    <div><dt>Core after descope</dt><dd>≈ 2,000</dd></div>
+    <div><dt>Planning cost</dt><dd>$10k – $26k</dd></div>
+    <div><dt>Gate</dt><dd>E6 · week 3</dd></div>
+  </dl>
+</div>
+
+<!-- ============ 00 ============ -->
+<section id="anatomy" class="col">
+  <div class="sechead"><span class="secnum">00</span><h2>How to read a run card</h2></div>
+  <p class="subhead">every experiment has the same seven fields — no exceptions</p>
+
+  <p>The uniformity is the point. If an experiment cannot fill all seven fields, it is not ready to run. In particular, <strong>an experiment with no decision rule is not an experiment</strong> — it is a way of spending money and finding out afterwards what you think.</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Field</th><th>What goes in it</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">Question</td><td>the one thing this run answers, phrased so a number can answer it</td></tr>
+        <tr><td class="mono">Varies</td><td>every factor that moves, with its exact levels</td></tr>
+        <tr><td class="mono">Fixed</td><td>anything that could plausibly move and must not</td></tr>
+        <tr><td class="mono">Size</td><td>the run count, derived arithmetically from the factor levels</td></tr>
+        <tr><td class="mono">Records</td><td>anything logged beyond the standard schema in §02</td></tr>
+        <tr><td class="mono">Computes</td><td>the statistics produced, named</td></tr>
+        <tr><td class="mono">Gate</td><td>the condition that must hold to proceed, and what to do if it doesn't</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ 01 ============ -->
+<section id="factors" class="col">
+  <div class="sechead"><span class="secnum">01</span><h2>The factor space</h2></div>
+  <p class="subhead">everything that is allowed to change, and everything that is not</p>
+
+  <div class="machine wide">
+    <div class="machine-label">Factors — the things experiments move</div>
+    <div class="scroll"><table>
+      <thead><tr><th>Symbol</th><th>Factor</th><th>Levels</th><th>Set by</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">S</td><td>strategy</td><td class="mono">FULL · PRUNE · SUMMARIZE · RETRIEVE · SUMMARIZE_T0 · EXTRACTIVE</td><td>fixed set, §03 of the runbook</td></tr>
+        <tr><td class="mono">B</td><td>context budget</td><td class="mono">NATIVE · LOOSE · MEDIUM · TIGHT</td><td><b>E2</b> — measured, not chosen</td></tr>
+        <tr><td class="mono">M</td><td>model</td><td>M1 primary (≈55% baseline) · M2 frontier · M3 older generation</td><td>E1b confirms M1's baseline</td></tr>
+        <tr><td class="mono">T</td><td>task</td><td>30-task study subset, 5-task dev slice (disjoint), 10-task variance subset (⊂ study)</td><td><b>E1b</b></td></tr>
+        <tr><td class="mono">K</td><td>seed</td><td class="mono">0–4 (0–9 on the variance subset)</td><td><b>E7</b> power simulation</td></tr>
+        <tr><td class="mono">C</td><td>probe category</td><td class="mono">1 constraint · 2 id · 3 result · 4 error · 5 temporal · 6 xref</td><td><b>E5</b> admits or rejects each</td></tr>
+        <tr><td class="mono">Π</td><td>probe position</td><td class="mono">Q1 · Q2 · Q3</td><td>step index from E1's per-task median</td></tr>
+        <tr><td class="mono">L</td><td>probe placement</td><td class="mono">HEAD (cond. a) · INJECTED (cond. c) · FILE (cond. c, naturalistic)</td><td>E5, then E8</td></tr>
+        <tr><td class="mono">N</td><td>note position</td><td class="mono">AFTER_RECENT (default) · BEFORE_RECENT</td><td><b>E11</b> only</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="machine wide">
+    <div class="machine-label">Held fixed — changing any of these mid-study invalidates everything before it</div>
+    <div class="scroll"><table>
+      <tbody>
+        <tr><td class="mono">system_template</td><td>byte-identical across every arm and every model</td></tr>
+        <tr><td class="mono">instruction_template</td><td>DeepSWE's own; probes append, never rewrite</td></tr>
+        <tr><td class="mono">tool surface</td><td>the shared bash tool, unmodified — this is why FILES is deferred</td></tr>
+        <tr><td class="mono">keep_recent</td><td class="n">4</td></tr>
+        <tr><td class="mono">head</td><td class="mono">messages[:2]</td></tr>
+        <tr><td class="mono">reasoning_effort</td><td>per model, matching DeepSWE's published configuration; never varied across arms</td></tr>
+        <tr><td class="mono">agent temperature</td><td class="n">0.5</td></tr>
+        <tr><td class="mono">wall_time_limit</td><td class="n">9,000 s</td></tr>
+        <tr><td class="mono">step_limit · cost_limit</td><td>identical across arms; above the FULL-arm p99 from E1; summarizer cost counted in</td></tr>
+        <tr><td class="mono">benchmark_commit · image_digest</td><td>pinned in E0, snapshotted locally, canary-checked weekly</td></tr>
+        <tr><td class="mono">model_id + date</td><td>pinned; a silent provider update is a study-invalidating event</td></tr>
+        <tr><td class="mono">price_table_version</td><td>frozen at a stated date so cost results don't drift when providers re-price</td></tr>
+        <tr><td class="mono">retriever_cfg · SLOT_PROMPT</td><td>frozen after E4; hashes recorded on every run</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note alr">
+    <span class="tag">Fairness rule</span>
+    <p><b>Whatever tuning effort SUMMARIZE gets, RETRIEVE gets the same, on the same dev slice, in the same experiment (E4).</b> Tuning one arm and not the other is how a measurement paper turns into a rigged comparison — and it is the criticism that would land hardest, because our headline is literally <em>summarize versus retrieve</em>. Both configs are frozen together and hashed before a single confirmatory run.</p>
+  </div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section id="record" class="col">
+  <div class="sechead"><span class="secnum">02</span><h2>What gets recorded</h2></div>
+  <p class="subhead">three tables, written by every experiment, from E0 onward</p>
+
+  <p>Write these schemas before E0 and never change them. Every field below exists because some analysis or some reviewer objection needs it; a field you skip in week 1 is a run you repeat in week 8.</p>
+
+  <div class="machine wide">
+    <div class="machine-label">runs.parquet — one row per trial</div>
+    <div class="scroll"><pre><code><span class="c"># identity ------------------------------------------------------------------</span>
+run_id, trial_id, job_id, started_at, finished_at
+task_id, repo, language, task_peak_tokens_full   <span class="c"># from E1, carried on every row</span>
+
+<span class="c"># the design cell -----------------------------------------------------------</span>
+strategy, budget_level, budget_tokens, model_id, model_date, seed
+keep_recent, note_position, summarizer_id, summ_temperature
+retriever_cfg_hash, slot_prompt_hash, harness_commit, benchmark_commit, image_digest
+
+<span class="c"># probe ----------------------------------------------------------------------</span>
+probe_id, probe_category, probe_placement, probe_position, probe_step_k
+probe_injected            <span class="c"># False if the run ended before step k -> excluded from probe analysis</span>
+probe_hard                <span class="c"># did the final diff honour the requirement?      (primary)</span>
+probe_in_note             <span class="c"># did the fact survive into the summary?          (condition b)</span>
+probe_soft                <span class="c"># still present in the final model view?          (secondary)</span>
+
+<span class="c"># outcome --------------------------------------------------------------------</span>
+reward                    <span class="c"># DeepSWE's own verifier, untouched</span>
+exit_reason               <span class="c"># submitted | step_limit | cost_limit | timeout</span>
+                          <span class="c"># | context_overflow | format_errors | infra_error</span>
+steps, tool_calls, tool_errors, wall_ms
+
+<span class="c"># resources ------------------------------------------------------------------</span>
+tokens_in, tokens_out, reasoning_tokens
+cache_read_tokens, cache_write_tokens          <span class="c"># straight from the provider</span>
+agent_cost_usd, summarizer_cost_usd, total_cost_usd
+compactions, first_compaction_step, note_tokens_mean
+peak_view_tokens, peak_log_tokens              <span class="c"># what it saw vs what it would have seen</span>
+recent_overflow_events                         <span class="c"># the guard tripped N times</span></code></pre></div>
+  </div>
+
+  <div class="machine wide">
+    <div class="machine-label">steps.parquet — one row per model call</div>
+    <div class="scroll"><pre><code>run_id, step_idx
+view_tokens, log_tokens          <span class="c"># the compaction ratio at this step</span>
+prompt_hash                      <span class="c"># hash of the exact serialized prefix  <-- THE CACHE ANALYSIS DEPENDS ON THIS</span>
+prefix_match_len                 <span class="c"># longest shared prefix with the previous call, in tokens</span>
+compaction_fired, note_tokens
+tokens_in, tokens_out, reasoning_tokens, cache_read, cache_write
+latency_ms, action_kind, obs_tokens, tool_error, truncated_observation</code></pre></div>
+  </div>
+
+  <div class="machine wide">
+    <div class="machine-label">compactions.parquet — one row per compaction event</div>
+    <div class="scroll"><pre><code>run_id, step_idx
+older_tokens, recent_tokens, note_tokens, compression_ratio
+summarizer_latency_ms, summarizer_cost_usd, note_text_hash, note_text
+probe_in_older                   <span class="c"># was the planted fact inside the block being compacted?</span>
+probe_in_note                    <span class="c"># did it survive?  -> construction loss, computed offline, free</span>
+prior_note_tokens                <span class="c"># the telephone chain: summary-of-summary depth</span></code></pre></div>
+  </div>
+
+  <div class="note amb">
+    <span class="tag">The two fields people forget</span>
+    <p><b><code>prompt_hash</code> and <code>prefix_match_len</code>.</b> Every cache claim in the paper is reconstructed from these. Without them, "re-pricing is free" becomes "re-run the study." <b><code>note_text</code> in full.</b> Storing the actual summaries is what makes condition (b), the memory taxonomy and every post-hoc question about <em>what</em> the summarizer wrote answerable without new runs. Both are cheap. Neither is recoverable later.</p>
+  </div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section id="assign" class="col">
+  <div class="sechead"><span class="secnum">03</span><h2>Assignment rules</h2></div>
+  <p class="subhead">how a run gets its probe, its seed and its injection step — deterministically</p>
+
+  <div class="argument">
+    Every comparison in this study is <em>paired</em>. A task under SUMMARIZE at TIGHT is compared to <em>the same task, same seed, same probe, same injection step</em> under RETRIEVE at TIGHT. With thirty tasks, pairing is not a refinement — it is the difference between a detectable effect and a shrug.
+  </div>
+
+  <div class="machine wide">
+    <div class="machine-label">assign.py — deterministic, reproducible, identical across arms</div>
+    <div class="scroll"><pre><code>CATS = [<span class="s">"constraint"</span>,<span class="s">"id"</span>,<span class="s">"result"</span>,<span class="s">"error"</span>,<span class="s">"temporal"</span>,<span class="s">"xref"</span>]
+POS  = [<span class="s">"Q1"</span>,<span class="s">"Q2"</span>,<span class="s">"Q3"</span>]
+
+<span class="k">def</span> assign(task_idx: int, seed: int, median_steps_full: int) -&gt; dict:
+    <span class="s">"""Depends ONLY on (task, seed). NOT on strategy, budget or model —</span>
+<span class="s">       so every arm sees an identical probe on an identical step. That is what</span>
+<span class="s">       makes the comparison paired."""</span>
+    cat = CATS[(task_idx + seed) % 6]                <span class="c"># Latin-square over tasks x seeds</span>
+    pos = POS[(task_idx + 2 * seed) % 3]
+    frac = {<span class="s">"Q1"</span>: .25, <span class="s">"Q2"</span>: .50, <span class="s">"Q3"</span>: .75}[pos]
+    <span class="c"># k comes from the FULL-arm median step count measured in E1 —</span>
+    <span class="c"># NOT from this run's own length, which differs by arm.</span>
+    k = max(2, round(frac * median_steps_full))
+    <span class="k">return</span> {<span class="s">"probe_category"</span>: cat, <span class="s">"probe_position"</span>: pos, <span class="s">"probe_step_k"</span>: k}</code></pre></div>
+  </div>
+
+  <ul>
+    <li><strong>One probe per run.</strong> Six requirements in one run is a different task, not six measurements. Balance across runs instead — 30 tasks × 5 seeds gives 150 cells per (strategy, budget), against 18 category×position combinations: roughly 8 replicates each.</li>
+    <li><strong>k is fixed in advance, from E1.</strong> If it came from the run's own length, a tight budget — which changes step count — would move the probe, and probe survival would be confounded with the treatment.</li>
+    <li><strong>If the run ends before step k</strong>, the probe never fires: set <code>probe_injected=False</code>, keep the run in the reward analysis, exclude it from the probe analysis, and <em>report the rate per arm</em>. A systematic difference in that rate is itself informative.</li>
+    <li><strong>Seed controls sampling only.</strong> The same seed number means the same probe and the same k in every arm; it does not mean the model behaves identically, and we don't pretend it does.</li>
+  </ul>
+</section>
+
+<!-- ============ 04 ============ -->
+<section id="order" class="col">
+  <div class="sechead"><span class="secnum">04</span><h2>The run order</h2></div>
+  <p class="subhead">fourteen experiments in dependency order — nothing skips ahead</p>
+
+  <!-- PHASE A -->
+  <div class="phase"><b>Phase A</b> · calibrate — week 1</div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E0</span><span class="exp-name">Integration smoke</span>
+      <span class="exp-meta"><span class="pill must">blocking</span><span class="pill">6 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Can we get <em>our</em> agent, with <em>our</em> logging, through Pier and past a DeepSWE verifier at all?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">Pier integration path: <b>A</b> (fork mini-swe-agent + adapter) vs <b>B</b> (litellm proxy shim). 3 tasks each.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val"><code>S=FULL</code>, <code>B=NATIVE</code>, <code>M=M1</code>, <code>seed=0</code>, no probe.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">3 tasks × 2 paths = 6 runs</span> · &lt;$50 · half a day</div></div>
+      <div class="row"><div class="lab">Records</div><div class="val">Whether <code>reward.json</code> appears, whether the sidecar writes all three tables, and — critically — <b>whether the provider returns <code>cache_read_input_tokens</code></b>. If the harness does not set <code>cache_control</code>, we find out here, not in week 6.</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">Nothing statistical. Pin <code>benchmark_commit</code> and every <code>image_digest</code>; snapshot images locally.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>3/3 green on one path, cache counters present.</b> If neither path works, everything stops — this is the only genuinely blocking unknown in the study. If cache counters are absent, enable <code>cache_control</code> explicitly and re-run before proceeding.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E1a</span><span class="exp-name">Length census</span>
+      <span class="exp-meta"><span class="pill must">blocking</span><span class="pill">113 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">How long is a DeepSWE run, really? Nobody has published this. Every downstream number depends on it.</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>T</code> = all 113 tasks.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val"><code>S=FULL</code>, <code>B=NATIVE</code>, <code>M=M1</code>, <code>seed=0</code>, no probe, <code>--env modal</code>.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">113 runs</span> · ~$250–600 · one day wall clock at 32-way concurrency</div></div>
+      <div class="row"><div class="lab">Records</div><div class="val">The full step schema. Plus per-task: head tokens (system + <code>instruction.md</code>), observation-size distribution, which command kinds blow up context.</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">
+        <ul>
+          <li><code>peak_view_tokens</code> per task → p10 / p25 / p40 / p50 / p75 / p90 / p99</li>
+          <li><code>median_steps_full</code> per task → feeds the probe injection step k</li>
+          <li>head floor (the hard minimum any budget must clear)</li>
+          <li>cost and wall clock per task → the real forecast</li>
+          <li><code>context_overflow</code> rate — tasks that cannot run uncompacted <em>at all</em></li>
+        </ul>
+      </div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>At least 40 tasks with peak context above 2.5× the head floor.</b> If fewer, DeepSWE is shorter than believed and the study needs a longer benchmark or a smaller model window — decide before spending more.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E1b</span><span class="exp-name">Baseline census</span>
+      <span class="exp-meta"><span class="pill">~180 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Which long tasks are <em>winnable but not trivial</em> — and do our FULL numbers reproduce the published leaderboard?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>T</code> = the ~45 length-qualified tasks from E1a; <code>seed</code> ∈ {0,1,2,3}.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">Everything else as E1a.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">≈45 × 4 = 180 runs</span> · ~$400–900</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">
+        <p>Per-task baseline pass rate ∈ {0, .25, .5, .75, 1}. <b>Two-stage selection:</b> keep tasks whose peak context clears the TIGHT budget <em>and</em> whose baseline rate is in <span class="num">[0.25, 0.75]</span>. Target 30 for the study subset, 5 disjoint for the dev slice, and the 10 nearest 0.5 as the variance subset.</p>
+        <p>Also: our pooled FULL pass@1 ± 1.96 SE against the published figure for the same model — a reproduction check that costs nothing extra.</p>
+      </div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>≥20 tasks survive both filters</b> (target 30) <b>and our FULL pass@1 CI overlaps the published one.</b> If fewer than 20 survive, widen <code>K</code> rather than the subset — more seeds on fewer tasks beats more tasks with no signal. If the reproduction check fails, stop and find out why; nothing downstream is interpretable.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E2</span><span class="exp-name">Replay budget calibration</span>
+      <span class="exp-meta"><span class="pill free">0 API calls</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Which four budget values actually produce the compaction pressure we need?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">Candidate budget, swept finely — every 8K from 16K to the model's native window — replayed through <code>build_view()</code> against every E1 trajectory.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">The trajectories. No model is called; this is pure replay.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">≈45 tasks × ~25 candidates × 3 strategies</span> · minutes on a laptop · <b>$0</b></div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">Compaction count per task per candidate; realised view sizes; how often the recent-overflow guard trips; how much history survives beside the note at each candidate.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>The grid acceptance test.</b> At LOOSE, ≥30% of subset tasks compact ≥1×. At TIGHT, ≥80% compact ≥3×, the median view still carries ≥1.5× the head in real history, and the overflow guard trips on &lt;10% of steps. If no grid satisfies all four, the subset is wrong — go back to E1b, not to the grid.</div></div>
+    </div>
+  </div>
+
+  <!-- PHASE B -->
+  <div class="phase"><b>Phase B</b> · validate the instruments — week 2</div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E3</span><span class="exp-name">Summarizer determinism</span>
+      <span class="exp-meta"><span class="pill">100 summarizer calls</span><span class="pill">no agent runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">How deterministic is <code>temperature=0</code> actually? We are about to call an arm "the deterministic control."</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">Repetition — 20 identical calls per payload, on 5 real pre-compaction payloads pulled from E1 trajectories.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">Payload, prompt, model, <code>temperature=0</code>.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">5 × 20 = 100 calls</span> · &lt;$20 · one hour</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">Exact-match rate across repeats; mean pairwise normalized edit distance; and the one that matters — <b>does the set of retained facts vary between repeats?</b></div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">No stop condition — this experiment produces a <b>number for the paper</b>, not a decision. If exact-match is 85%, we write 85% and call the arm "reduced-stochasticity," not "deterministic." Claiming determinism we did not verify is a one-afternoon falsification for a reviewer.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E4</span><span class="exp-name">Symmetric dev-tuning</span>
+      <span class="exp-meta"><span class="pill risk">fairness-critical</span><span class="pill">60 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">What is the <em>best</em> version of each arm we can build with equal effort — before either is allowed near the study subset?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">
+        <p><b>RETRIEVE:</b> chunking (per-command vs fixed-window), scorer (BM25 / embedding / hybrid α ∈ {.3,.5,.7}), pin policy (recent-only vs recent+writes), budget fill ratio.</p>
+        <p><b>SUMMARIZE:</b> <code>SLOT_PROMPT</code> field set — which named slots (constraints, identifiers, open errors, file state, decisions) and how much detail each gets.</p>
+      </div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">The <b>5-task dev slice, disjoint from the study subset</b>. Equal wall-clock tuning budget for both arms, agreed in advance and recorded.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val">Offline scoring sweep (free) → online check: <span class="num">5 tasks × 2 budgets × 2 arms × K=3 = 60 runs</span> · ~$150</div></div>
+      <div class="row"><div class="lab">Records</div><div class="val">Offline: recall of turns containing the gold edit or the needed fact. Online: reward, cost, note quality.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>Both configs frozen and hashed on the same day.</b> <code>retriever_cfg_hash</code> and <code>slot_prompt_hash</code> are written to every subsequent run. Any change after this point is a pre-registration deviation and is reported as one.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E5</span><span class="exp-name">Probe validation &amp; ceiling</span>
+      <span class="exp-meta"><span class="pill must">gates the memory axis</span><span class="pill">105 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">For each of the six probe categories: can the model follow it when it is <em>visible</em>, how often is it satisfied <em>by accident</em>, and does adding it damage the task?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>C</code> ∈ all 6 categories, plus a <b>no-probe control</b>. Placement fixed at <code>HEAD</code> — the probe sits in the instruction, never compacted. This is condition (a), the ceiling.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">Dev slice, <code>S=FULL</code>, <code>B=NATIVE</code>, <code>M=M1</code>, K=3.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">5 × (6+1) × 3 = 105 runs</span> · ~$250</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">
+        <ul>
+          <li><b>Head compliance</b> — probe_hard rate when the fact is visible. This is the ceiling for that category.</li>
+          <li><b>Base rate</b> — how often the no-probe runs satisfy the checker anyway.</li>
+          <li><b>Compliance lift</b> = head compliance − base rate. The usable signal.</li>
+          <li><b>Probe tax</b> — Δreward between probed and no-probe runs.</li>
+          <li><b>Checker precision</b> — hand-label ~100 diffs; report agreement with the automatic checker.</li>
+        </ul>
+      </div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>Admit a category only if lift ≥ 0.4, base rate ≤ 0.5, and probe tax CI includes 0.</b> A probe the model cannot follow when it is looking straight at it measures reasoning, not memory. A probe satisfied by accident half the time measures nothing. <b>Expect to lose one or two categories here</b> — losing them now costs $250; losing them in week 9 costs the taxonomy.</div></div>
+    </div>
+  </div>
+
+  <!-- PHASE C -->
+  <div class="phase"><b>Phase C</b> · the gate — week 3</div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E6</span><span class="exp-name">Pilot — go / no-go</span>
+      <span class="exp-meta"><span class="pill must">the decision</span><span class="pill">250 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Does the strategy move <em>anything</em> — success, consistency, or fact survival — end-to-end through the real pipeline, with a confidence interval?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">
+        <p><code>S</code> ∈ {FULL, SUMMARIZE, RETRIEVE} × <code>B</code> ∈ {LOOSE, TIGHT} (FULL at NATIVE only) × <code>seed</code> ∈ 0–4.</p>
+        <p>Probes: the two strongest categories from E5, <code>L=INJECTED</code>, positions balanced by §03.</p>
+      </div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">10 tasks drawn from the study subset spanning the baseline-rate range; <code>M=M1</code>; frozen E4 configs.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">50 + 100 + 100 = 250 runs</span> · ~$500–1,300 · 2–3 days</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">
+        <ul>
+          <li>Paired Δreward, SUMMARIZE vs RETRIEVE at TIGHT, task-level bootstrap CI</li>
+          <li>pass¹, all@5, and the gap Δ = pass¹ − all@5 per arm</li>
+          <li>Construction loss = 1 − <code>probe_in_note</code> rate (computed offline from the logged notes)</li>
+          <li>Observed cache-hit rate per arm — the first real look at the cost inversion</li>
+          <li>Truncation and overflow rates per arm</li>
+          <li>Observed effect sizes and variances → the input to E7</li>
+        </ul>
+      </div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">
+        <p><b>GO if any one holds with a CI excluding zero:</b></p>
+        <ul>
+          <li>SUMMARIZE is ≥10 points worse on reward at TIGHT, <b>or</b></li>
+          <li>pass¹ is comparable but Δ(SUMMARIZE) &gt; Δ(RETRIEVE) — <em>the thesis, and the outcome we want</em>, <b>or</b></li>
+          <li>construction loss is reliably above zero.</li>
+        </ul>
+        <p><b>NO-GO:</b> nothing moves and the CIs are tight. That is a real result — "modern models are robust to compaction on real long coding tasks" — and it is cheap to establish. Write it up as a short paper and stop; do not spend $20k looking for an effect the pilot says is not there.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E7</span><span class="exp-name">Power &amp; pre-registration</span>
+      <span class="exp-meta"><span class="pill free">0 API calls</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">How many seeds and tasks does the primary endpoint actually need — and what exactly are we committing to before we look at more data?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">In simulation: <code>K</code> ∈ 3–12, <code>|T|</code> ∈ 15–40, effect sizes bracketing E6's observed values.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val">A binomial simulation. Minutes. <b>$0.</b> <em>A first pass runs in week 1 with assumed effect sizes — do not wait for the pilot to discover the pilot was underpowered.</em></div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">Power for the Δ-gap contrast at 80% and 90%; the minimum detectable effect at the planned N; and the <b>feasible bound</b> on the binary variance ratio at the observed mean, printed so the secondary metric is read in context.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>Pre-registration filed and timestamped</b> — primary endpoint, K, subset, budget grid, exclusion rules, truncation policy, analysis model, and the frozen config hashes. From here on, every change is reported as a deviation. See §07 for the exact text.</div></div>
+    </div>
+  </div>
+
+  <!-- PHASE D -->
+  <div class="phase"><b>Phase D</b> · confirm — weeks 6–9</div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E8</span><span class="exp-name">Main grid — primary model</span>
+      <span class="exp-meta"><span class="pill">1,800 runs</span><span class="pill">the paper</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">The full operating curve: how do all four axes move as the budget tightens, for one model, with controls?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">
+        <p><code>S</code> ∈ {PRUNE, SUMMARIZE, RETRIEVE} × <code>B</code> ∈ {LOOSE, MEDIUM, TIGHT} × <code>T</code> = 30 × <code>seed</code> ∈ 0–4 → <span class="num">1,350</span></p>
+        <p><code>S=FULL</code> × <code>B=NATIVE</code> × 30 × 5 → <span class="num">150</span></p>
+        <p><code>S</code> ∈ {SUMMARIZE_T0, EXTRACTIVE} × <code>B=TIGHT</code> × 30 × 5 → <span class="num">300</span></p>
+        <p>Probes: every admitted category × 3 positions, assigned by §03, <code>L=INJECTED</code>.</p>
+      </div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val"><code>M=M1</code>; <code>N=AFTER_RECENT</code>; frozen configs; identical guardrails.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">1,800 runs</span> · ~$3.6k–9k · 1.5–2 days at 32-way concurrency</div></div>
+      <div class="row"><div class="lab">Records</div><div class="val">All three schemas, in full. Archive every trajectory — the uncompacted log is the reusable artifact.</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">Budget curves per strategy · the Δ-gap contrast · C_out · the 6×3 loss grid · cache-adjusted cost-of-pass Pareto · the mixed-effects <code>strategy × budget</code> interaction · truncation and overflow rates.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">
+        <p><b>Run in budget order: TIGHT → LOOSE → MEDIUM.</b> TIGHT carries the pre-registered primary contrast, so if the campaign is interrupted at any point the headline is already answerable. MEDIUM only fills in the curve's shape.</p>
+        <p>Health check after the TIGHT block: truncation rate &lt;15% in every arm, overflow guard tripping on &lt;10% of steps, no arm's cost more than 3× another's. If any fails, pause and diagnose before spending the rest.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E8b</span><span class="exp-name">Probe tax control</span>
+      <span class="exp-meta"><span class="pill">100 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Does carrying a planted requirement depress reward on the study subset — and does it depress it <em>differently</em> per arm?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">Probe present vs absent. <code>S</code> ∈ {SUMMARIZE, RETRIEVE}, <code>B=TIGHT</code>, 10 study tasks, seeds 0–4, <b>no probe</b>.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">Everything else matches the corresponding E8 cells exactly — the probed comparison already exists, so this is the missing half of a paired contrast.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">100 runs</span> · ~$200–500</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>Probe tax CI includes 0, and does not differ between arms.</b> If it differs, the probe is interacting with the strategy and every probe-based claim needs the tax subtracted explicitly — report it either way.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E9</span><span class="exp-name">Models 2 and 3</span>
+      <span class="exp-meta"><span class="pill">2,100 runs</span><span class="pill">the trend</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Does each model have its own operating curve — and is compaction damage <em>shrinking</em> across model generations, or flat?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>M</code> ∈ {M2 frontier, M3 <b>older generation</b>} × <code>S</code> ∈ {FULL, SUMMARIZE, RETRIEVE} × <code>B</code> ∈ {LOOSE, MEDIUM, TIGHT} × 30 tasks × seeds 0–4.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">Same subset, same probes, same assignment, same frozen configs. <code>reasoning_effort</code> set per model to its published configuration and held constant across arms.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">2 × 1,050 = 2,100 runs</span> · ~$4k–12k (M2 dominates; M3 is cheap)</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">Three operating curves on one axis. Per model: the knee, the Δ-gap, cache-adjusted cost-of-pass, and the loss grid. Across models: does survival-under-compaction improve at the same rate as raw accuracy?</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>Run M3 (older) first.</b> It is the cheap one and it carries the trends contribution — the claim that <em>upgrading your model does not fix your memory problem</em>. If compute runs short, the frontier model is what gets cut, not the generational gap.</div></div>
+    </div>
+  </div>
+
+  <!-- PHASE E -->
+  <div class="phase"><b>Phase E</b> · harden — weeks 10–11</div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E10</span><span class="exp-name">Variance deepening</span>
+      <span class="exp-meta"><span class="pill">150 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Does the consistency gap hold when K doubles — or was it an artefact of five seeds?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>seed</code> ∈ 5–9 (the second five). <code>S</code> ∈ {FULL, SUMMARIZE, RETRIEVE}, <code>B=TIGHT</code>, the 10-task variance subset.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">10 × 3 × 5 = 150 runs</span> · ~$300–750</div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">all@10 and the Δ gap at K=10; the stability of C_out between K=5 and K=10; the variance ratio with its feasible bound.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val"><b>The sign and rough magnitude of the Δ gap must survive.</b> If the effect halves when K doubles, we report that honestly — a consistency claim that is itself unstable across seed counts is a finding about our method, and hiding it is how a paper gets retracted rather than rejected.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E11</span><span class="exp-name">Note-placement ablation</span>
+      <span class="exp-meta"><span class="pill">150 runs</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">We cite Lost-in-the-Middle as a confound but always put the summary in the same slot. Does the slot matter?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>N</code> ∈ {AFTER_RECENT, BEFORE_RECENT} — the compacted note before vs after the verbatim recent turns.</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">15 study tasks, <code>S=SUMMARIZE</code>, <code>B=TIGHT</code>, <code>M=M1</code>, seeds 0–4.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">15 × 2 × 5 = 150 runs</span> · ~$300–750</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">No stop condition — a defensive number. <b>If placement moves reward by more than the strategy effect does, that is a headline in its own right</b> ("where you put the summary matters as much as whether you summarize") and the paper gains a section rather than losing one.</div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E12</span><span class="exp-name">Cache re-pricing</span>
+      <span class="exp-meta"><span class="pill free">0 API calls</span><span class="pill done">the free headline</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Under which billing regimes does summarization stop being the cheap option?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val">Pricing regime: <b>observed</b> (the actual bill) · <b>no-cache</b> · <b>warm</b> (5-min TTL, back-to-back turns) · <b>cold</b> (1-hour TTL, a user who messages hourly).</div></div>
+      <div class="row"><div class="lab">Fixed</div><div class="val">Every trace already logged. Prices frozen at a stated date.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val">Every run from E6, E8, E8b, E9, E10, E11 re-priced. <b>$0.</b></div></div>
+      <div class="row"><div class="lab">Computes</div><div class="val">Cost-of-pass per arm per regime; the accuracy-vs-cost Pareto with and without cache; and <b>whether the ranking flips</b> — the specific claim that summarization's rewrite destroys a prefix worth ~90% of its own input cost.</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">Only runs if <code>prompt_hash</code> and <code>prefix_match_len</code> were logged from E0. <b>This is the single cheapest headline in the study and the single easiest one to lose by forgetting two columns in week 1.</b></div></div>
+    </div>
+  </div>
+
+  <div class="exp">
+    <div class="exp-top">
+      <span class="exp-id">E13</span><span class="exp-name">Gaia2 generalization arm</span>
+      <span class="exp-meta"><span class="pill">~200 runs</span><span class="pill">one sentence</span></span>
+    </div>
+    <div class="exp-body">
+      <div class="row"><div class="lab">Question</div><div class="val">Is the effect coding-specific?</div></div>
+      <div class="row"><div class="lab">Varies</div><div class="val"><code>S</code> ∈ {FULL, SUMMARIZE, RETRIEVE} × <code>B</code> ∈ {LOOSE, TIGHT} on Gaia2's longest splits, K=5, ~20 tasks. Same <code>build_view()</code>, different <code>build_history_from_logs</code> hook.</div></div>
+      <div class="row"><div class="lab">Size</div><div class="val"><span class="num">≈200 runs</span> · cheap — Gaia2 runs cost cents</div></div>
+      <div class="row gate"><div class="lab">Gate</div><div class="val">Purpose is <b>one sentence in the paper</b>: the direction of the effect replicates in a non-coding domain. Do not expand it into a second study. If the effect does <em>not</em> replicate, that is a scope statement — "we measure this on long coding tasks" — not a crisis.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 ============ -->
+<section id="totals" class="col">
+  <div class="sechead"><span class="secnum">05</span><h2>Totals, and what to cut</h2></div>
+  <p class="subhead">the whole campaign on one page</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>#</th><th>Experiment</th><th>Runs</th><th>Cost</th><th>Week</th><th>Cuttable?</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">E0</td><td>Integration smoke</td><td class="n">6</td><td class="n">&lt;$50</td><td class="n">1</td><td>no</td></tr>
+        <tr><td class="mono">E1a</td><td>Length census</td><td class="n">113</td><td class="n">$250–600</td><td class="n">1</td><td>no</td></tr>
+        <tr><td class="mono">E1b</td><td>Baseline census</td><td class="n">180</td><td class="n">$400–900</td><td class="n">1</td><td>no</td></tr>
+        <tr><td class="mono">E2</td><td>Replay calibration</td><td class="n">0</td><td class="n">$0</td><td class="n">1</td><td>no</td></tr>
+        <tr><td class="mono">E3</td><td>Summarizer determinism</td><td class="n">0*</td><td class="n">&lt;$20</td><td class="n">2</td><td>no</td></tr>
+        <tr><td class="mono">E4</td><td>Symmetric dev-tuning</td><td class="n">60</td><td class="n">$150</td><td class="n">2</td><td>no</td></tr>
+        <tr><td class="mono">E5</td><td>Probe validation</td><td class="n">105</td><td class="n">$250</td><td class="n">2</td><td>no</td></tr>
+        <tr><td class="mono">E6</td><td>Pilot — the gate</td><td class="n">250</td><td class="n">$500–1,300</td><td class="n">3</td><td>no</td></tr>
+        <tr><td class="mono">E7</td><td>Power &amp; pre-registration</td><td class="n">0</td><td class="n">$0</td><td class="n">4–5</td><td>no</td></tr>
+        <tr><td class="mono">E8</td><td>Main grid, M1</td><td class="n">1,800</td><td class="n">$3.6k–9k</td><td class="n">6–7</td><td>shrink only</td></tr>
+        <tr><td class="mono">E8b</td><td>Probe tax control</td><td class="n">100</td><td class="n">$200–500</td><td class="n">7</td><td>no</td></tr>
+        <tr><td class="mono">E9</td><td>Models 2 &amp; 3</td><td class="n">2,100</td><td class="n">$4k–12k</td><td class="n">8–9</td><td>M2 yes, M3 no</td></tr>
+        <tr><td class="mono">E10</td><td>Variance deepening</td><td class="n">150</td><td class="n">$300–750</td><td class="n">10</td><td>yes</td></tr>
+        <tr><td class="mono">E11</td><td>Note placement</td><td class="n">150</td><td class="n">$300–750</td><td class="n">10</td><td>yes</td></tr>
+        <tr><td class="mono">E12</td><td>Cache re-pricing</td><td class="n">0</td><td class="n">$0</td><td class="n">11</td><td>never</td></tr>
+        <tr><td class="mono">E13</td><td>Gaia2 generalization</td><td class="n">200</td><td class="n">~$50</td><td class="n">11</td><td>yes</td></tr>
+        <tr><th>Total</th><td></td><td class="n"><b>≈5,200</b></td><td class="n"><b>$10k–26k</b></td><td class="n">1–11</td><td></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p style="font-size:13.5px;color:var(--muted)">* E3 makes 100 summarizer calls but launches no agent runs.</p>
+
+  <div class="note amb">
+    <span class="tag">Correction to the runbook's forecast</span>
+    <p>The runbook quoted <b>$8k–20k</b>. This is <b>$10k–26k</b>, because that figure omitted the census (E1a/E1b), the dev-tuning (E4), the probe validation (E5) and the probe-tax control (E8b) — roughly 450 runs of instrument-building. Those are not optional: they are the experiments that stop the expensive ones from being uninterpretable. Better to carry the honest number.</p>
+  </div>
+
+  <h3>Descope order — in the order you actually cut</h3>
+  <ol>
+    <li>E13 Gaia2 arm and E11 note placement. <span class="pill">−350 runs</span></li>
+    <li>E10 variance deepening; keep K=5 everywhere. <span class="pill">−150</span></li>
+    <li><b>M2, the frontier model</b> — keep M3, the older generation. The trend needs a <em>gap</em> between generations, not three points on it, and M3 is the cheap one. <span class="pill">−1,050</span></li>
+    <li>Budget grid from three treatment levels to two — drop MEDIUM, keep LOOSE and TIGHT. <span class="pill">−~800</span></li>
+    <li>Study subset from 30 tasks to 20, keeping the widest baseline-rate spread. <span class="pill">−~33%</span></li>
+  </ol>
+  <p><strong>What survives all five: ≈2,000 runs, $4k–10k</strong> — E0–E8b plus M3, two budgets, three strategies, K=5, every admitted probe category, the full cache re-pricing. That is still the reliability claim, the cache inversion, the memory taxonomy <em>and</em> the generational trend.</p>
+</section>
+
+<!-- ============ 06 ============ -->
+<section id="analysis" class="col">
+  <div class="sechead"><span class="secnum">06</span><h2>Which experiment answers which question</h2></div>
+  <p class="subhead">every claim in the paper traced to the runs that produce it</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Claim</th><th>Statistic</th><th>From</th><th>Needs</th></tr></thead>
+      <tbody>
+        <tr><td><b>Q1</b> Budget curve &amp; operating range</td><td>reward vs budget per strategy; the knee</td><td class="mono">E8, E9</td><td>paired task-level bootstrap</td></tr>
+        <tr><td><b>Q2</b> Consistency collapse <span class="pill done">primary</span></td><td>Δ = pass¹ − all@k; Δ(S) − Δ(R) at TIGHT</td><td class="mono">E6 → E8, E10</td><td>K≥5; E7 power; pairing</td></tr>
+        <tr><td>…not just an extra random call</td><td>Δ under SUMMARIZE_T0</td><td class="mono">E8 controls</td><td>E3's identity number</td></tr>
+        <tr><td>…rewriting, not merely shrinking</td><td>SUMMARIZE vs EXTRACTIVE at matched length</td><td class="mono">E8 controls</td><td>—</td></tr>
+        <tr><td>…not a weak-baseline artefact</td><td>RETRIEVE's dev-slice performance</td><td class="mono">E4</td><td>symmetric tuning budget</td></tr>
+        <tr><td><b>Q3</b> Cost inversion</td><td>cost-of-pass per regime; the Pareto</td><td class="mono">E12</td><td><code>prompt_hash</code> from E0</td></tr>
+        <tr><td>…the cache really does break</td><td>observed cache-read rate around compaction events</td><td class="mono">E8 steps</td><td>provider counters</td></tr>
+        <tr><td><b>Q4</b> What gets destroyed</td><td>6 × 3 loss grid</td><td class="mono">E8 + offline (b)</td><td>E5 admission; E8b tax</td></tr>
+        <tr><td>…construction vs retrieval loss</td><td>(a)→(b) and (b)→(c) drops</td><td class="mono">E5 (a) · notes (b) · E8 (c)</td><td>full note text logged</td></tr>
+        <tr><td>Generational trend</td><td>damage per model generation</td><td class="mono">E9</td><td>M3 protected in descope</td></tr>
+        <tr><td>Position is not the explanation</td><td>note placement contrast</td><td class="mono">E11</td><td>—</td></tr>
+        <tr><td>Not coding-specific</td><td>direction replicates</td><td class="mono">E13</td><td>—</td></tr>
+        <tr><td>Our numbers are the benchmark's numbers</td><td>FULL pass@1 vs published</td><td class="mono">E1b</td><td>pinned model + commit</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <h3>Standing analysis rules</h3>
+  <ul>
+    <li><strong>Everything paired.</strong> Bootstrap resamples <em>tasks</em>, 10,000 draws, not runs — the task is the unit of generalization.</li>
+    <li><strong>Exclusions, pre-registered.</strong> <code>infra_error</code> excluded and its rate reported. <code>step_limit</code>, <code>cost_limit</code>, <code>timeout</code>, <code>context_overflow</code> scored <code>reward=0</code> and reported as separate per-arm rates. <code>probe_injected=False</code> excluded from probe analysis only.</li>
+    <li><strong>Multiplicity.</strong> One primary endpoint. Everything else is secondary and labelled as such; Holm correction within each family.</li>
+    <li><strong>The model:</strong> <code>reward ~ strategy * budget + position + log_steps + tool_errors + (1|task) + (1|repo)</code>. Drop the repo term if it fails to converge, and say so.</li>
+  </ul>
+</section>
+
+<!-- ============ 07 ============ -->
+<section id="prereg" class="col">
+  <div class="sechead"><span class="secnum">07</span><h2>The pre-registration, in the words you file</h2></div>
+  <p class="subhead">written after E6, before E8 — this is the whole commitment</p>
+
+  <div class="machine wide">
+    <div class="machine-label">Primary hypothesis and test</div>
+    <div class="scroll"><pre><code>SETTING   DeepSWE, 30-task study subset (selection rule: peak context &gt; TIGHT budget
+          AND FULL-arm baseline pass rate in [0.25, 0.75], fixed after E1b),
+          primary model M1 at its published reasoning effort, K = 5 seeds,
+          budget level TIGHT (value fixed by E2 before any treatment run).
+
+DEFINE    pass1(A)  = mean reward over all runs of arm A
+          all@5(A)  = fraction of tasks where A succeeds on all 5 seeds
+          <span class="k">Delta(A)  = pass1(A) - all@5(A)</span>          <span class="c"># the inconsistency</span>
+
+H1        <span class="k">Delta(SUMMARIZE) - Delta(RETRIEVE) &gt; 0</span>
+          one-sided, alpha = 0.025, task-level bootstrap, 10,000 resamples.
+
+H1b       The co-primary condition that makes H1 interesting:
+          the CI for pass1(SUMMARIZE) - pass1(RETRIEVE) <span class="k">includes 0</span>.
+          <span class="c"># "same average, worse reliability" — both halves must hold</span>
+
+FALSIFIED if the H1 CI includes 0. We report that outcome with the same
+          prominence as a positive one.
+
+SECONDARY C_out; the variance ratio Var(S)/Var(R) reported beside its feasible
+          bound at the observed mean; the strategy x budget interaction;
+          cost-of-pass under four billing regimes; the 6 x 3 loss grid;
+          the per-generation trend.
+
+FROZEN    retriever_cfg_hash, slot_prompt_hash, budget grid, task subset,
+          probe categories admitted by E5, exclusion rules, K.
+          Any later change is reported as a deviation, with its date.</code></pre></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">Why the endpoint is the gap, not a variance ratio</span>
+    <p>For a binary outcome, mean within-task variance is <code>E[p(1−p)] = m − m² − Var<sub>tasks</sub>(p)</code>. At a mean of 0.6 that quantity cannot exceed <b>0.24</b>, and it reaches 0.24 only if <em>every</em> task is exactly a p=0.6 coin flip. A pre-registered "≥2× the variance at equal means" would therefore require the summarize arm to sit at the mathematical ceiling while retrieve is near-deterministic per task — we would be committing to a prediction that is close to unsatisfiable even if we are entirely right. The <code>pass¹ − all@k</code> gap expresses the same idea with no ceiling, and it is the metric a practitioner can act on: <em>how often does a task that usually works fail this time?</em></p>
+  </div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section id="fail" class="col">
+  <div class="sechead"><span class="secnum">08</span><h2>When a gate fails</h2></div>
+  <p class="subhead">decided now, so it is not decided under pressure later</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Failure</th><th>What it means</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td><b>E0</b> neither integration path works</td><td>the only truly blocking unknown</td><td>Run mini-swe-agent directly against the Harbor task containers and invoke the verifier ourselves. Slower, no Modal parallelism — but the study is not dead.</td></tr>
+        <tr><td><b>E0</b> no cache counters</td><td>the cache headline is unobservable in the real bill</td><td>Enable <code>cache_control</code> explicitly and re-run E0. If the provider genuinely does not report it, downgrade the cache result from <em>measured</em> to <em>modelled</em> and say so plainly.</td></tr>
+        <tr><td><b>E1a</b> fewer than 40 long tasks</td><td>DeepSWE is shorter than believed</td><td>Use a smaller-window model so the same tasks compact naturally, or move the flagship to a longer benchmark. Do <em>not</em> quietly tighten the budget into the degenerate regime.</td></tr>
+        <tr><td><b>E1b</b> fewer than 20 tasks survive</td><td>the long tasks are all near the floor</td><td>Widen K, not the subset. Report the subset selection rule in full — it is the first thing a reviewer will interrogate.</td></tr>
+        <tr><td><b>E1b</b> reproduction check fails</td><td>our harness differs from theirs somewhere</td><td>Stop. Nothing downstream is interpretable until our FULL numbers sit on the published leaderboard's CI.</td></tr>
+        <tr><td><b>E2</b> no grid passes</td><td>the subset, not the grid, is wrong</td><td>Return to E1b with a stricter length filter.</td></tr>
+        <tr><td><b>E5</b> a category fails admission</td><td>that probe measures reasoning or luck, not memory</td><td>Drop it and report it. A five-category taxonomy that is honest beats a six-category one that is not.</td></tr>
+        <tr><td><b>E6</b> no-go</td><td>compaction does not visibly hurt on real long coding tasks</td><td>That is a publishable negative result, obtained for ~$2k. Write the short paper. Do not spend $20k hunting an effect the pilot says is absent.</td></tr>
+        <tr><td><b>E8</b> summarize <em>wins</em></td><td>the interesting inversion</td><td>Report it. Then check the other three axes — it may win on reward while losing on consistency, on cost, or on fact survival. Measuring four axes is exactly what makes any direction a result.</td></tr>
+        <tr><td><b>E10</b> effect halves at K=10</td><td>the consistency claim is seed-count sensitive</td><td>Report the K-dependence as a finding about measuring reliability. Concealing it is how a paper gets retracted instead of rejected.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="argument">
+    Four of the fourteen experiments cost nothing, and three of the four — the replay calibration, the power simulation, the cache re-pricing — are the ones that decide whether the expensive ten are interpretable. <em>Run the free ones first, and run them properly.</em>
+  </div>
+</section>
+
+<footer class="col">
+  GAIA research · DeepSWE track · volume III, companion to the Runbook and the GAIA Project Handbook.<br>
+  Run counts follow arithmetically from the factor levels in §01 and are exact; cost and wall-clock bands are planning estimates, replaced by measured values the day E1a lands.<br>
+  Every gate in §04 is a commitment made before the data exists. That is the point of writing them down now.
+</footer>
+
+</div>

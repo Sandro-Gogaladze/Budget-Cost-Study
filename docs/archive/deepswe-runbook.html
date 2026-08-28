@@ -1,0 +1,1014 @@
+<title>DeepSWE Runbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+
+<style>
+:root{
+  --ground:#F6F8F7;
+  --surface:#FFFFFF;
+  --surface-2:#EDF2F0;
+  --line:#D5DEDB;
+  --line-soft:#E4EBE9;
+  --ink:#111C1A;
+  --ink-2:#3A4B48;
+  --muted:#5F716E;
+  --accent:#0F8F70;
+  --accent-soft:rgba(15,143,112,.10);
+  --accent-line:rgba(15,143,112,.32);
+  --amber:#9A6A18;
+  --amber-soft:rgba(154,106,24,.10);
+  --amber-line:rgba(154,106,24,.30);
+  --alert:#B4453B;
+  --alert-soft:rgba(180,69,59,.09);
+  --alert-line:rgba(180,69,59,.28);
+  --code-bg:#F0F4F2;
+
+  --f-sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --f-serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+
+  --col:min(72ch,100%);
+  --wide:min(1120px,100%);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1417;
+    --surface:#141D21;
+    --surface-2:#18242A;
+    --line:#25343A;
+    --line-soft:#1D2A2F;
+    --ink:#DEE7E5;
+    --ink-2:#B4C3C0;
+    --muted:#83958F;
+    --accent:#45C8A2;
+    --accent-soft:rgba(69,200,162,.10);
+    --accent-line:rgba(69,200,162,.30);
+    --amber:#D9A45B;
+    --amber-soft:rgba(217,164,91,.10);
+    --amber-line:rgba(217,164,91,.28);
+    --alert:#E4796C;
+    --alert-soft:rgba(228,121,108,.10);
+    --alert-line:rgba(228,121,108,.28);
+    --code-bg:#101A1E;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1417;
+  --surface:#141D21;
+  --surface-2:#18242A;
+  --line:#25343A;
+  --line-soft:#1D2A2F;
+  --ink:#DEE7E5;
+  --ink-2:#B4C3C0;
+  --muted:#83958F;
+  --accent:#45C8A2;
+  --accent-soft:rgba(69,200,162,.10);
+  --accent-line:rgba(69,200,162,.30);
+  --amber:#D9A45B;
+  --amber-soft:rgba(217,164,91,.10);
+  --amber-line:rgba(217,164,91,.28);
+  --alert:#E4796C;
+  --alert-soft:rgba(228,121,108,.10);
+  --alert-line:rgba(228,121,108,.28);
+  --code-bg:#101A1E;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--f-sans);
+  font-size:16px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.page{display:flex;flex-direction:column;align-items:center;padding:0 20px 96px}
+.col{width:var(--col)}
+.wide{width:var(--wide)}
+
+/* ---- top bar ---- */
+.topbar{
+  position:sticky;top:0;z-index:20;width:100%;
+  background:color-mix(in srgb,var(--ground) 92%,transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar-in{
+  max-width:1120px;margin:0 auto;padding:11px 20px;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+}
+.wordmark{font-family:var(--f-mono);font-weight:600;font-size:13px;letter-spacing:.06em;color:var(--ink)}
+.wordmark span{color:var(--accent)}
+.topnav{display:flex;gap:14px;flex-wrap:wrap;margin-left:auto}
+.topnav a{
+  font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;
+  color:var(--muted);text-decoration:none;padding:2px 0;border-bottom:1px solid transparent;
+}
+.topnav a:hover,.topnav a:focus-visible{color:var(--accent);border-bottom-color:var(--accent-line)}
+
+/* ---- hero ---- */
+.hero{padding:56px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px}
+.chip{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.03em;
+  padding:4px 10px;border:1px solid var(--line);border-radius:2px;color:var(--muted);
+  background:var(--surface);
+}
+.chip.on{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+.eyebrow{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent);margin:0 0 10px
+}
+h1{
+  font-size:clamp(30px,4.6vw,46px);line-height:1.08;letter-spacing:-.022em;
+  font-weight:600;margin:0 0 20px;text-wrap:balance;
+}
+.lede{font-size:17.5px;color:var(--ink-2);margin:0 0 8px}
+.lede strong{color:var(--ink);font-weight:600}
+
+/* ---- status strip ---- */
+.strip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+  border:1px solid var(--line);border-radius:3px;background:var(--surface);
+  margin:34px 0 8px;overflow:hidden;
+}
+.strip div{padding:13px 16px;border-right:1px solid var(--line-soft)}
+.strip div:last-child{border-right:0}
+.strip dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.strip dd{margin:0;font-size:14px;font-weight:500}
+.strip .ok{color:var(--accent)}
+
+/* ---- sections ---- */
+section{padding:52px 0 8px;border-top:1px solid var(--line-soft);margin-top:44px}
+section:first-of-type{border-top:0;margin-top:0}
+.sechead{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+.secnum{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.06em}
+h2{font-size:clamp(21px,2.6vw,27px);line-height:1.2;letter-spacing:-.015em;font-weight:600;margin:0;text-wrap:balance}
+.subhead{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);letter-spacing:.03em;margin:0 0 26px;padding-left:40px}
+h3{font-size:17px;font-weight:600;letter-spacing:-.008em;margin:32px 0 10px;text-wrap:balance}
+h4{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:26px 0 8px}
+p{margin:0 0 15px}
+ul,ol{margin:0 0 15px;padding-left:20px}
+li{margin:0 0 7px}
+li::marker{color:var(--muted)}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line)}
+a:hover,a:focus-visible{border-bottom-color:var(--accent)}
+strong{font-weight:600}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--code-bg);border:1px solid var(--line-soft);border-radius:2px;padding:1px 5px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---- thesis / argument voice ---- */
+.argument{
+  font-family:var(--f-serif);font-size:18px;line-height:1.6;color:var(--ink);
+  border-left:2px solid var(--accent);padding:4px 0 4px 22px;margin:26px 0;
+}
+.argument em{font-style:italic}
+
+/* ---- callouts ---- */
+.note{
+  border:1px solid var(--line);border-left-width:3px;border-radius:3px;
+  background:var(--surface);padding:15px 18px;margin:24px 0;font-size:14.5px;color:var(--ink-2);
+}
+.note b{color:var(--ink)}
+.note .tag{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:6px}
+.note.acc{border-left-color:var(--accent);background:var(--accent-soft)}
+.note.acc .tag{color:var(--accent)}
+.note.amb{border-left-color:var(--amber);background:var(--amber-soft)}
+.note.amb .tag{color:var(--amber)}
+.note.alr{border-left-color:var(--alert);background:var(--alert-soft)}
+.note.alr .tag{color:var(--alert)}
+.note p:last-child{margin-bottom:0}
+
+/* ---- cards ---- */
+.cards{display:grid;gap:14px;margin:22px 0}
+.cards.two{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.cards.three{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.card{border:1px solid var(--line);border-radius:3px;background:var(--surface);padding:16px 17px}
+.card h5{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0 0 8px}
+.card p{font-size:14.5px;color:var(--ink-2);margin:0 0 8px}
+.card p:last-child{margin:0}
+.card .big{font-family:var(--f-mono);font-size:22px;font-weight:600;color:var(--accent);letter-spacing:-.01em;display:block;margin-bottom:3px;font-variant-numeric:tabular-nums}
+
+/* ---- machine blocks ---- */
+.machine{margin:22px 0}
+.machine-label{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:0 0 7px;
+}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+pre{
+  margin:0;padding:16px 18px;font-family:var(--f-mono);font-size:12.5px;line-height:1.66;
+  color:var(--ink-2);white-space:pre;
+}
+pre .c{color:var(--muted)}
+pre .k{color:var(--accent)}
+pre .s{color:var(--amber)}
+pre .w{color:var(--alert)}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;background:var(--surface-2);white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.mono,th.mono{font-family:var(--f-mono);font-size:12.5px}
+
+/* ---- pills ---- */
+.pill{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 7px;border-radius:2px;border:1px solid var(--line);color:var(--muted);
+  white-space:nowrap;display:inline-block;
+}
+.pill.must{color:var(--alert);border-color:var(--alert-line);background:var(--alert-soft)}
+.pill.risk{color:var(--amber);border-color:var(--amber-line);background:var(--amber-soft)}
+.pill.done{color:var(--accent);border-color:var(--accent-line);background:var(--accent-soft)}
+
+/* ---- timeline ---- */
+.tl{display:flex;flex-direction:column;gap:0;margin:24px 0}
+.tl-row{display:grid;grid-template-columns:78px 1fr;gap:18px;padding:16px 0;border-top:1px solid var(--line-soft)}
+.tl-row:first-child{border-top:0}
+.tl-wk{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--accent);padding-top:2px;font-variant-numeric:tabular-nums}
+.tl-body h5{font-size:15px;font-weight:600;margin:0 0 6px}
+.tl-body p{font-size:14.5px;color:var(--ink-2);margin:0 0 8px}
+.tl-body ul{font-size:14.5px;color:var(--ink-2);margin:0 0 8px}
+.exit{
+  font-family:var(--f-mono);font-size:11.5px;color:var(--muted);
+  border-left:2px solid var(--accent-line);padding-left:11px;margin-top:9px;
+}
+.exit b{color:var(--accent);font-weight:500}
+
+hr.soft{border:0;border-top:1px solid var(--line-soft);margin:34px 0}
+
+footer{
+  width:var(--col);margin-top:64px;padding-top:22px;border-top:1px solid var(--line-soft);
+  font-family:var(--f-mono);font-size:11px;color:var(--muted);line-height:1.7;
+}
+
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:640px){
+  .subhead{padding-left:0}
+  .tl-row{grid-template-columns:1fr;gap:6px}
+  .strip div{border-right:0;border-bottom:1px solid var(--line-soft)}
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="wordmark">DEEPSWE<span>·</span>RUNBOOK</div>
+    <nav class="topnav">
+      <a href="#why">Why</a>
+      <a href="#substrate">Substrate</a>
+      <a href="#hook">Hook</a>
+      <a href="#calib">Calibrate</a>
+      <a href="#probes">Probes</a>
+      <a href="#grid">Grid</a>
+      <a href="#measure">Measure</a>
+      <a href="#weeks">Weeks</a>
+      <a href="#risk">Risk</a>
+      <a href="#done">Done</a>
+    </nav>
+  </div>
+</div>
+
+<div class="page">
+
+<div class="col hero">
+  <div class="chips">
+    <span class="chip on">Track: DeepSWE-first</span>
+    <span class="chip">Harness: mini-swe-agent</span>
+    <span class="chip">Runner: Pier</span>
+    <span class="chip">API-only · no training</span>
+  </div>
+  <p class="eyebrow">Companion to the GAIA Project Handbook · volume II</p>
+  <h1>How we run the budget sweep on real, long coding tasks</h1>
+  <p class="lede">The handbook set the thesis: <strong>measure what the compaction budget costs.</strong> This is the build order for the benchmark that carries it. Every step below is a thing someone can start on Monday — what to run, what to log, what to compute, and what number decides whether we continue.</p>
+
+  <dl class="strip">
+    <div><dt>Benchmark</dt><dd>DeepSWE · 113 tasks</dd></div>
+    <div><dt>Intervention point</dt><dd class="mono">DefaultAgent.query()</dd></div>
+    <div><dt>Phase now</dt><dd>Week-1 calibration</dd></div>
+    <div><dt>Blocking unknown</dt><dd class="ok">Pier BYO-agent hook</dd></div>
+  </dl>
+</div>
+
+<!-- ================= 01 ================= -->
+<section id="why" class="col">
+  <div class="sechead"><span class="secnum">01</span><h2>Why DeepSWE can carry this alone</h2></div>
+  <p class="subhead">the case for going single-benchmark first</p>
+
+  <p>The handbook treats Gaia2 and DeepSWE as co-primary: Gaia2 the microscope, DeepSWE the flagship. Focusing on DeepSWE first is not a descope — it is the arm that produces the paper's external validity, and three facts say it can stand on its own.</p>
+
+  <div class="cards three">
+    <div class="card">
+      <h5>Length is real</h5>
+      <p>DeepSWE runs are genuinely long, so a <em>normal</em> production budget forces compaction by itself. Nothing to argue about: no artificial threshold, no stress-test caveat.</p>
+    </div>
+    <div class="card">
+      <h5>The grader is as good</h5>
+      <p><span class="big">1.4%</span>verifier disagreement with an independent judge (n=735), vs <span class="num">32.4%</span> for SWE-Bench Pro. That is the same league as Gaia2's 98% human agreement.</p>
+    </div>
+    <div class="card">
+      <h5>The cache story lives here</h5>
+      <p>Long runs build long stable prefixes — which is exactly where prompt caching pays, and exactly what a rewrite destroys. The cost inversion is far more dramatic on DeepSWE than on a 19K-token phone task.</p>
+    </div>
+  </div>
+
+  <p>The second fact is the important one. The handbook's stated reason for needing Gaia2 was its near-perfect verifier. DeepSWE's verifiers were independently audited and disagree with a judge on <strong>1.4% [0.7–2.5]</strong> of rollouts. That argument no longer forces a second benchmark.</p>
+
+  <h3>What we give up by starting here — honestly</h3>
+  <ul>
+    <li><strong>Cheap iteration.</strong> A gaia2-mini run costs cents; a DeepSWE run costs dollars and takes tens of minutes in a container. Debugging is slower and every mistake is more expensive. <em>Mitigation:</em> §04 builds a 3-task smoke slice and a replay harness so most iteration never calls a model at all.</li>
+    <li><strong>One domain.</strong> A coding-only result invites "does this generalize?" <em>Mitigation:</em> Gaia2 returns in weeks 8–11 as a <em>generalization arm</em> — same code, ~200 runs, one budget pair — not as a co-primary. That is a far cheaper way to buy the second domain than running both tracks from week 1.</li>
+    <li><strong>Task count.</strong> 113 tasks total, and our study subset will be ~30. Confidence intervals will be wide unless the analysis is paired. §07 makes pairing non-optional.</li>
+  </ul>
+
+  <div class="note acc">
+    <span class="tag">Decision</span>
+    <p><b>DeepSWE-first, Gaia2 as a generalization arm.</b> All four workstreams point at DeepSWE through week 7. Gaia2 is re-entered in week 8 only if the DeepSWE result is real, and only at the scale needed to say "the effect is not coding-specific."</p>
+  </div>
+</section>
+
+<!-- ================= 02 ================= -->
+<section id="substrate" class="col">
+  <div class="sechead"><span class="secnum">02</span><h2>What DeepSWE actually is</h2></div>
+  <p class="subhead">the substrate, in the detail you need to build against it</p>
+
+  <div class="machine wide">
+    <div class="machine-label">Benchmark facts</div>
+    <div class="scroll"><table>
+      <tbody>
+        <tr><th>Tasks</th><td class="n">113</td><td>across 91 repositories; the median repo contributes one task, so no codebase dominates</td></tr>
+        <tr><th>Languages</th><td class="n">5</td><td>TypeScript, Go, Python, JavaScript, Rust</td></tr>
+        <tr><th>Origin</th><td class="n">original</td><td>reference solutions written from scratch, not mined from PRs — contamination-free by construction</td></tr>
+        <tr><th>Prompt size</th><td class="n">~2,000 chars</td><td>half the length of SWE-Bench Pro's, but solutions need ~5.5× more code</td></tr>
+        <tr><th>Grading</th><td class="n">program</td><td>hand-written verifiers asserting observable behavior through public APIs; any implementation accepted</td></tr>
+        <tr><th>Verifier audit</th><td class="n">1.4%</td><td>total disagreement with an independent judge [95% CI 0.7–2.5], n=735</td></tr>
+        <tr><th>Flake control</th><td class="n">3×</td><td>each verifier run three times during authoring; inconsistent outcomes sent back for revision</td></tr>
+        <tr><th>Licence</th><td class="n">Apache-2.0</td><td>clone and run, no gate</td></tr>
+        <tr><th>Harness</th><td class="n">mini-swe-agent</td><td>shared bash tool, unified system prompt across models</td></tr>
+        <tr><th>Runner</th><td class="n">Pier</td><td>Harbor-compatible; backends <code>docker</code> and <code>modal</code></td></tr>
+        <tr><th>Wall clock</th><td class="n">9,000 s</td><td>2.5 h cap; only 0.9% of 7,174 scored rollouts reached it</td></tr>
+        <tr><th>Their sampling</th><td class="n">~4 / task</td><td>~452 rollouts per configuration, 16 configurations</td></tr>
+        <tr><th>Their uncertainty</th><td class="n">pass@1 ± 1.96 SE</td><td>SE = std(s₁…s_R)/√R over rollouts — run-to-run variance only</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">Use this</span>
+    <p><b>The benchmark's own convention is multi-rollout variance.</b> DeepSWE reports pass@1 ± 1.96 SE computed across repeated rollouts, with ~4 per task. Our K=5 is not an eccentric demand — it is <em>their</em> methodology, one seed deeper. Say so in the paper; it removes the "you re-ran things just to find noise" objection before it's made.</p>
+  </div>
+
+  <h3>Published reference scores</h3>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Model</th><th>pass@1</th><th>95% CI</th><th>What it means for us</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">GPT-5.5</td><td class="n">70.0%</td><td class="n">67.2–72.9</td><td>headroom above and below — good dynamic range for a budget sweep</td></tr>
+        <tr><td class="mono">GPT-5.4</td><td class="n">55.5%</td><td class="n">53.4–57.7</td><td>near 50% — the best place to detect a consistency collapse</td></tr>
+        <tr><td class="mono">Claude Opus 4.7</td><td class="n">54.2%</td><td class="n">49.5–58.9</td><td>same; and the Anthropic cache semantics are the ones we model</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p>These matter for a practical reason: a strategy effect is easiest to see when the baseline pass rate is away from the floor and the ceiling. A model sitting near 55% on the full set is the right primary model. A model at 70% will show ceiling compression on easy tasks and is better used as the second, confirmatory model.</p>
+
+  <h3>Task anatomy (Harbor format)</h3>
+  <div class="machine wide">
+    <div class="machine-label">deep-swe/tasks/&lt;task-id&gt;/</div>
+    <div class="scroll"><pre><code><span class="k">task.toml</span>        <span class="c"># metadata: id, repo, language, timeouts</span>
+<span class="k">instruction.md</span>   <span class="c"># the prompt the agent sees (~2,000 chars) — this is HEAD, never compacted</span>
+<span class="k">environment/</span>     <span class="c"># Dockerfile + repo pin — the sandbox</span>
+<span class="k">tests/</span>           <span class="c"># the program verifier — DO NOT MODIFY (our probes live beside it)</span>
+<span class="k">solution/</span>        <span class="c"># reference solution, review-only, never used for grading</span></code></pre></div>
+  </div>
+
+  <div class="machine wide">
+    <div class="machine-label">Output per trial</div>
+    <div class="scroll"><pre><code>jobs/&lt;timestamp_or_name&gt;/&lt;trial_id&gt;/
+  <span class="k">reward.json</span>      <span class="c"># the pass/fail we analyse</span>
+  <span class="k">ctrf.json</span>        <span class="c"># machine-readable test report (which assertions failed)</span>
+  <span class="k">test-stdout.txt</span>  <span class="c"># verifier output</span>
+  <span class="k">run.log</span>          <span class="c"># harness log</span>
+  <span class="c"># + ATIF v1.7 trajectory emitted by the agent adapter</span>
+  <span class="s">gaia/</span>            <span class="c"># ← OUR sidecar: view.jsonl, usage.jsonl, notes.jsonl, probe.json</span></code></pre></div>
+  </div>
+
+  <div class="note amb">
+    <span class="tag">The gap that defines week 1</span>
+    <p><b>The DeepSWE paper does not publish per-run token or step distributions.</b> It reports median output tokens and duration as efficiency metrics, but no context-length statistics — and explicitly enforced no step or cost cap. The "70–325 steps, 46–276K tokens" figures in the handbook are secondhand and must be re-derived. <b>We cannot choose a budget grid until we measure this ourselves.</b> That measurement is §04, and it is the first thing anyone runs.</p>
+  </div>
+</section>
+
+<!-- ================= 03 ================= -->
+<section id="hook" class="col">
+  <div class="sechead"><span class="secnum">03</span><h2>The intervention point</h2></div>
+  <p class="subhead">one method, same as Gaia2 — different file</p>
+
+  <p>Gaia2 was a clean substrate because its agent rebuilds context through a single method. mini-swe-agent is cleaner still. Its design is deliberately linear: <strong>every step just appends to <code>self.messages</code></strong>, and that list is <em>both</em> the trajectory record and the model input. There is no hidden state, no session, no memory layer to fight.</p>
+
+  <div class="machine wide">
+    <div class="machine-label">What we are subclassing — src/minisweagent/agents/default.py</div>
+    <div class="scroll"><pre><code><span class="c">@dataclass</span>
+<span class="k">class</span> AgentConfig:
+    system_template: str
+    instance_template: str
+    step_limit: int = 0
+    cost_limit: float = <span class="w">3.0</span>              <span class="c"># ← USD. Default will truncate long runs. MUST raise.</span>
+    wall_time_limit_seconds: int = 0
+    max_consecutive_format_errors: int = 3
+    output_path: Path | None = None
+
+<span class="k">class</span> DefaultAgent:
+    <span class="k">def</span> run(self, task: str = <span class="s">""</span>, **kwargs) -&gt; dict
+    <span class="k">def</span> step(self) -&gt; list[dict]
+    <span class="k">def</span> query(self) -&gt; dict                 <span class="c"># ← THE ONE METHOD. "Query the model and return model messages"</span>
+    <span class="k">def</span> execute_actions(self, message: dict) -&gt; list[dict]
+    <span class="k">def</span> add_messages(self, *messages: dict) -&gt; list[dict]
+    <span class="k">def</span> get_template_vars(self, **kwargs) -&gt; dict</code></pre></div>
+  </div>
+
+  <div class="note acc">
+    <span class="tag">The rule that makes this clean</span>
+    <p><b>Never mutate <code>self.messages</code>. Build a derived view.</b> Because mini-swe-agent uses one list for both the log and the prompt, mutating it would destroy our ground truth. Instead <code>query()</code> computes a <em>view</em>, sends the view to the model, and appends the response to the full log. Result: we keep a complete, uncompacted trajectory for <em>every</em> run in <em>every</em> arm — which is what makes the offline probe check (§05) and the cache re-pricing (§07) possible at zero extra API cost. This is strictly better than what we could do on Gaia2.</p>
+  </div>
+
+  <h3>The strategy override</h3>
+  <div class="machine wide">
+    <div class="machine-label">gaia/agent.py — the heart of the experiment</div>
+    <div class="scroll"><pre><code><span class="k">class</span> ContextManagedAgent(DefaultAgent):
+    <span class="s">"""Changes ONLY which messages reach the model. self.messages stays the full log."""</span>
+
+    <span class="k">def</span> __init__(self, *a, strategy=<span class="s">"FULL"</span>, token_budget=None, summarizer=None,
+                 summ_temperature=0.0, keep_recent=4, **kw):
+        super().__init__(*a, **kw)
+        self.strategy, self.token_budget = strategy, token_budget
+        self.summarizer, self.summ_temperature = summarizer, summ_temperature
+        self.keep_recent = keep_recent
+        self.note = None
+        self.compactions = 0
+        self.summarizer_cost = 0.0          <span class="c"># model.cost does NOT see this — §06</span>
+
+    <span class="k">def</span> build_view(self) -&gt; list[dict]:
+        msgs = self.messages
+        <span class="k">if</span> self.strategy == <span class="s">"FULL"</span> <span class="k">or</span> self.token_budget <span class="k">is</span> None:
+            <span class="k">return</span> msgs
+        <span class="k">if</span> exact_tokens(msgs, self.model) &lt;= self.token_budget:
+            <span class="k">return</span> msgs                     <span class="c"># under budget: nothing to do</span>
+
+        head, body = msgs[:2], msgs[2:]     <span class="c"># system + instruction — ALWAYS kept</span>
+        room = self.token_budget - exact_tokens(head, self.model)
+
+        <span class="k">if</span> self.strategy == <span class="s">"PRUNE"</span>:
+            <span class="k">return</span> head + keep_last_that_fit(body, room)
+
+        <span class="k">if</span> self.strategy == <span class="s">"RETRIEVE"</span>:
+            q = subgoal_query(msgs)          <span class="c"># CURRENT subgoal, not the static task — §03.4</span>
+            <span class="k">return</span> head + hybrid_topk(body, query=q, budget=room, pin=writes_and_last(body))
+
+        <span class="k">if</span> self.strategy <span class="k">in</span> (<span class="s">"SUMMARIZE"</span>, <span class="s">"SUMMARIZE_T0"</span>, <span class="s">"EXTRACTIVE"</span>):
+            recent = keep_last_n(body, self.keep_recent)
+            older  = body[:len(body) - len(recent)]
+            <span class="k">if</span> self.strategy == <span class="s">"EXTRACTIVE"</span>:
+                self.note = extractive_span(older, target=room - exact_tokens(recent, self.model))
+            <span class="k">else</span>:
+                t = 0.0 <span class="k">if</span> self.strategy == <span class="s">"SUMMARIZE_T0"</span> <span class="k">else</span> self.summ_temperature
+                self.note, c = self.summarizer(
+                    SLOT_PROMPT + serialize(older, prior=self.note), temperature=t)
+                self.summarizer_cost += c
+            self.compactions += 1
+            view = head + [{<span class="s">"role"</span>: <span class="s">"user"</span>,
+                            <span class="s">"content"</span>: f<span class="s">"[COMPACTED MEMORY]\n{self.note}"</span>}] + recent
+            <span class="w">if</span> exact_tokens(view, self.model) &gt; self.token_budget:
+                <span class="c"># recent turns alone can exceed a tight budget — shrink, then record it</span>
+                view, dropped = shrink_recent(view, self.token_budget, self.model)
+                self.log_event(<span class="s">"recent_overflow"</span>, dropped=dropped)
+            <span class="k">return</span> view
+        <span class="k">raise</span> ValueError(self.strategy)
+
+    <span class="k">def</span> query(self) -&gt; dict:
+        view = self.build_view()
+        self.log_view(view)                  <span class="c"># exact prompt → cache re-pricing + probe_soft</span>
+        response = self.model.query(view)    <span class="c"># the model sees the VIEW…</span>
+        self.add_messages({<span class="s">"role"</span>: <span class="s">"assistant"</span>, **response})   <span class="c"># …the log keeps EVERYTHING</span>
+        self.log_usage(response)             <span class="c"># incl. cache_read / cache_creation tokens</span>
+        <span class="k">return</span> response</code></pre></div>
+  </div>
+
+  <h4>03.1 · Three fixes baked into the code above</h4>
+  <ul>
+    <li><strong><code>exact_tokens</code>, not an estimate.</strong> The budget is the independent variable of the whole study. Measurement error in the treatment itself is the one place a heuristic is unaffordable — use the provider tokenizer or the <code>usage</code> counts returned by the previous call.</li>
+    <li><strong>The recent-turns overflow guard.</strong> <code>head + note + recent</code> can exceed the budget when recent bash observations are large — which is exactly the tight-budget regime we care about. Without the guard, "32K budget" silently means "whatever the last four turns happen to weigh."</li>
+    <li><strong>Summarizer cost is tracked separately.</strong> <code>model.cost</code> only sees the agent's own calls. If the summarizer's tokens are invisible, <code>cost_limit</code> lets the summarize arm run longer for the same nominal budget — a confound that would flatter our own suspect.</li>
+  </ul>
+
+  <h4>03.2 · The arms</h4>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Arm</th><th>Role</th><th>What it isolates</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">FULL</td><td>control</td><td>the model's native window — this <em>is</em> the production default, not an idealisation</td></tr>
+        <tr><td class="mono">PRUNE</td><td>comparison</td><td>shrinking without rewriting</td></tr>
+        <tr><td class="mono">SUMMARIZE</td><td>the suspect</td><td>abstractive rewriting at the budget</td></tr>
+        <tr><td class="mono">RETRIEVE</td><td>comparison</td><td>selective recall without rewriting — <em>the</em> comparator for the headline claim</td></tr>
+        <tr><td class="mono">SUMMARIZE_T0</td><td>control</td><td>rules out "you added a stochastic call" <span class="pill risk">see 03.3</span></td></tr>
+        <tr><td class="mono">EXTRACTIVE</td><td>control</td><td>same-length span of <em>original</em> text → separates <em>rewriting hurts</em> from <em>shrinking hurts</em></td></tr>
+        <tr><td class="mono">FILES</td><td class="mono">deferred</td><td>agent-managed notes change the <em>tool surface</em>, not just the context — it is no longer a pure context intervention and needs its own confound analysis. Cut from v1; say so in the paper.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p class="subhead" style="padding-left:0">The handbook listed FILES in the experiment grid but not in the code. Resolved: deferred, with a stated reason.</p>
+
+  <h4>03.3 · "Temperature 0" is not determinism</h4>
+  <p>Hosted APIs are not deterministic at <code>temperature=0</code> — batching, routing and kernel non-determinism all leak through. Calling this arm "deterministic" is a claim a reviewer can falsify in one afternoon. Instead: <strong>measure it.</strong> Take one real compaction payload, call the summarizer 20 times at t=0, and report the exact output-identity rate in the paper. If it is 85%, we write 85%. The arm still does its job — it removes <em>most</em> of the added stochasticity — and the honesty is free.</p>
+
+  <h4>03.4 · The retrieve arm must not be a strawman</h4>
+  <div class="note alr">
+    <span class="tag">Correction to the handbook</span>
+    <p>The handbook's pseudo-code retrieves with <code>query=head[1]["content"]</code> — the original task statement, fixed for the whole run. That is a weak retriever, and it is the comparator our headline claim is measured against. We were careful to insist on a <em>strong</em> summarizer so nobody could call it a strawman; the same care has to run in the other direction, or a reviewer will simply say we rigged the baseline. Worse: if retrieve is weak, summarize may <em>beat</em> it on the mean, and the "same average, worse reliability" framing collapses.</p>
+  </div>
+  <p><strong>Specification for a strong RETRIEVE.</strong></p>
+  <ul>
+    <li><strong>Query</strong> = the task instruction <em>plus</em> the last two turns (the current subgoal), not the task alone.</li>
+    <li><strong>Corpus</strong> = prior turns chunked at command boundaries — one bash call and its observation per chunk.</li>
+    <li><strong>Scoring</strong> = hybrid BM25 + embedding similarity. Embeddings are cents per run; there is no excuse for lexical-only.</li>
+    <li><strong>Pins</strong> = always include the most recent <code>keep_recent</code> turns and every turn containing a file write or diff, regardless of score. An agent that forgets its own edits is not a retrieval baseline, it is a bug.</li>
+    <li><strong>Tuning</strong> = tuned once on a held-out 5-task dev slice, then <em>frozen</em> and pre-registered as "best-effort strong baseline." Frozen before the treatment runs, so it cannot be tuned toward the result we want.</li>
+  </ul>
+
+  <h4>03.5 · Getting our agent into Pier</h4>
+  <p>Pier ships a fixed roster of adapters — <code>nop, oracle, antigravity-sdk, claude-code, codex, cursor-cli, gemini-cli, opencode, mini-swe-agent</code> — and does not document a third-party agent hook. Two paths, and week 1 picks one:</p>
+  <div class="cards two">
+    <div class="card">
+      <h5>Path A — fork (recommended)</h5>
+      <p>Fork mini-swe-agent, add <code>ContextManagedAgent</code>, expose <code>strategy</code> / <code>token_budget</code> through <code>AgentConfig</code>. Pier's per-agent YAML already passes <code>kwargs</code> through, so the sweep becomes a config matrix. If the adapter drops unknown kwargs, fork Pier's adapter too — it is a thin shim.</p>
+      <p><span class="pill done">simple</span> <span class="pill risk">two forks to maintain</span></p>
+    </div>
+    <div class="card">
+      <h5>Path B — model-side proxy</h5>
+      <p>mini-swe-agent talks to models through <strong>litellm</strong>. Point it at a local proxy that rewrites the message list on the way out. Zero changes to agent or runner — and the same shim would work for <code>claude-code</code> and <code>codex</code> too, which is real optionality for the "extensible" claim.</p>
+      <p><span class="pill done">portable</span> <span class="pill risk">sees messages, not agent state</span></p>
+    </div>
+  </div>
+  <p><strong>Call:</strong> build A for the pilot — it is direct, and having the agent object gives us clean access to compaction counts and probe state. Keep B specified but unbuilt; it becomes the answer if we later want the same sweep on a different scaffold.</p>
+</section>
+
+<!-- ================= 04 ================= -->
+<section id="calib" class="col">
+  <div class="sechead"><span class="secnum">04</span><h2>Calibration week</h2></div>
+  <p class="subhead">the numbers nobody has published — measure before spending</p>
+
+  <div class="argument">
+    We do not know how long a DeepSWE run actually is. The paper does not report it. Every downstream decision — the budget grid, the task subset, the compute forecast, whether the study is even feasible — depends on one distribution we can obtain in a day. <em>Nothing else starts until this lands.</em>
+  </div>
+
+  <h3>The run</h3>
+  <div class="machine wide">
+    <div class="machine-label">Week 1 — one pass, full benchmark, control arm only</div>
+    <div class="scroll"><pre><code><span class="c"># 0. install</span>
+git clone https://github.com/datacurve-ai/deep-swe
+uv tool install git+https://github.com/datacurve-ai/pier
+
+<span class="c"># 1. smoke: three tasks, docker, prove the loop and the sidecar logging</span>
+pier run -p deep-swe/tasks --agent mini-swe-agent --n-tasks 3 --sample-seed 0 \
+         --model anthropic/claude-&lt;primary&gt;
+
+<span class="c"># 2. calibration: all 113 at FULL, one seed, parallel sandboxes</span>
+pier run -p deep-swe/tasks --agent mini-swe-agent --env modal \
+         --model anthropic/claude-&lt;primary&gt;
+<span class="c">#    cost_limit RAISED and recorded; step_limit set high but finite; wall clock 9000s</span></code></pre></div>
+  </div>
+
+  <h3>What we log — per step, every run, all arms, forever</h3>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Field</th><th>Why it exists</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">step_idx</td><td>position — the Lost-in-the-Middle confound and probe placement</td></tr>
+        <tr><td class="mono">view_tokens</td><td>what the model actually received; the budget's realised value</td></tr>
+        <tr><td class="mono">log_tokens</td><td>what the full history would have been — the counterfactual</td></tr>
+        <tr><td class="mono">prompt_hash</td><td><b>prefix hash per call.</b> Without it the cache analysis is not recoverable later — see §07</td></tr>
+        <tr><td class="mono">usage.cache_read_input_tokens</td><td>real cache hits, straight from the provider — turns the cache claim from simulated into measured</td></tr>
+        <tr><td class="mono">usage.cache_creation_input_tokens</td><td>the write side of the same ledger</td></tr>
+        <tr><td class="mono">completion_tokens · reasoning_tokens</td><td>cost accounting</td></tr>
+        <tr><td class="mono">compactions</td><td>descriptive only — we never set it, we report it</td></tr>
+        <tr><td class="mono">note_tokens</td><td>how much the summary actually saved</td></tr>
+        <tr><td class="mono">wall_ms · exit_reason</td><td>truncation bookkeeping: <code>submitted</code> / <code>step_limit</code> / <code>cost_limit</code> / <code>timeout</code> / <code>error</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="note amb">
+    <span class="tag">Do this on day one or pay for it twice</span>
+    <p><b>Log <code>prompt_hash</code> and the cache usage fields from the very first run.</b> The handbook calls the cache-adjusted cost analysis "free — it's re-pricing traces we already have." That is only true if the traces contain the exact prefix boundaries. If we discover in week 6 that we never logged them, "free" becomes "re-run everything."</p>
+  </div>
+
+  <h3>What we compute</h3>
+  <ul>
+    <li><strong>Peak context per task</strong> — p10 / p50 / p90 / p99. This sets the budget grid.</li>
+    <li><strong>The floor</strong> — system template + <code>instruction.md</code> tokens. Every budget must clear it with room to spare; the tightest budget is not allowed to be mostly system prompt.</li>
+    <li><strong>Step counts</strong> and the observation-size distribution — which commands blow up context (a <code>cat</code> of a large file, a full test log).</li>
+    <li><strong>Cost and wall clock per task</strong> — the real forecast, replacing the handbook's secondhand $0.61–$21 band.</li>
+    <li><strong>Baseline pass rate per task</strong> at FULL.</li>
+  </ul>
+
+  <h3>Choosing the budget grid</h3>
+  <p>Pick <span class="num">4</span> values from the measured distribution, not from intuition:</p>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Level</th><th>Rule</th><th>Intent</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">FULL</td><td>the model's native window</td><td>control — and it is what production does when it does nothing</td></tr>
+        <tr><td class="mono">LOOSE</td><td>≈ p75 of peak context</td><td>compaction fires on a minority of tasks — the gentle end of the curve</td></tr>
+        <tr><td class="mono">MEDIUM</td><td>≈ p40</td><td>most tasks compact at least once</td></tr>
+        <tr><td class="mono">TIGHT</td><td>≈ p15, floored at 2.5× the head</td><td>most tasks compact ≥3× — but never degenerates into "no history at all"</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p><strong>Acceptance test for the grid:</strong> at LOOSE, ≥30% of subset tasks compact at least once; at TIGHT, ≥80% compact at least three times, and the median view still carries ≥1.5× the head in actual history. If a grid cannot satisfy both, the subset is wrong, not the grid.</p>
+
+  <div class="note alr">
+    <span class="tag">The trap that would sink the subset</span>
+    <p><b>Selecting the longest tasks selects the hardest tasks.</b> Rank by context length alone and we end up with a subset where the baseline pass rate is near zero — and a strategy cannot lower a success rate that is already on the floor. <b>Two-stage selection:</b> first filter to tasks whose peak context exceeds the TIGHT budget (they must actually compact); then keep only those with a FULL-arm pass rate in <span class="num">[0.2, 0.9]</span>. Target 30. If fewer than 20 survive, widen K instead of widening the subset — more seeds on fewer tasks beats more tasks with no signal.</p>
+  </div>
+
+  <h3>The FULL control has a ceiling of its own</h3>
+  <p>On the longest tasks, an uncompacted history can exceed the model's own window. Policy, fixed before the runs: <strong>FULL = the model's native window</strong>, and any run that overflows it is recorded as <code>exit_reason=context_overflow</code> and reported as a <em>separate rate per model</em>, not silently scored. That overflow rate is itself a finding — it is the number that says "you cannot actually run this task without compacting," which is the premise of the whole paper.</p>
+
+  <h3>The replay harness</h3>
+  <p>Most of our iteration must not call a model. Because <code>self.messages</code> is preserved in full for every run, we can replay any trajectory through <code>build_view()</code> offline and check: does this budget fire? how many compactions? does the recent-overflow guard trip? what does the view look like at step 40? <strong>Build this in week 1.</strong> It converts most debugging from dollars into milliseconds, and it is the answer to "DeepSWE is too expensive to iterate on."</p>
+</section>
+
+<!-- ================= 05 ================= -->
+<section id="probes" class="col">
+  <div class="sechead"><span class="secnum">05</span><h2>Probes on a coding benchmark</h2></div>
+  <p class="subhead">the hard part — and the trick that makes it cheap</p>
+
+  <p>Gaia2 let us inject an event into a simulated phone world and watch whether the fact reached a calendar write. DeepSWE has no world to inject into: there is a repo, a bash tool, and a verifier. The probe mechanism has to be rebuilt. It also has to be rebuilt <em>without</em> hand-writing a verifier for each of 113 tasks, or the arm is unaffordable.</p>
+
+  <div class="note acc">
+    <span class="tag">The trick</span>
+    <p><b>Make the probe task-agnostic by checking the diff, not the task.</b> A planted requirement that constrains <em>how the agent edits code</em> — a required tag, a forbidden API, a named constant — is checkable by one small function over <code>git diff</code>, identically for every task in the benchmark. One checker, 113 tasks, no per-task verifier work. This is what makes the mechanism story affordable on DeepSWE.</p>
+  </div>
+
+  <h3>Where the fact is planted decides which condition it tests</h3>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Placement</th><th>Lands in</th><th>Compactable?</th><th>Condition</th></tr></thead>
+      <tbody>
+        <tr><td>appended to <code>instruction.md</code></td><td>head</td><td>no — head is always kept</td><td><b>(a) raw notes</b> — the ceiling. A failure here is a reasoning failure, not a memory failure.</td></tr>
+        <tr><td>injected as a maintainer message at step <em>k</em></td><td>body</td><td>yes</td><td><b>(c) the real pipeline</b> — survives compaction <em>and</em> must be recalled many steps later</td></tr>
+        <tr><td>written into a repo file the agent must read</td><td>body, as an observation</td><td>yes</td><td>(c), naturalistic variant — the fact arrives as tool output, not as an instruction</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <p>Condition <strong>(b) summary-only</strong> needs no agent run at all. We already log every pre-compaction history and every summary note, so: take the logged <code>older</code> block that contained the fact, take the note the summarizer produced from it, and ask whether the fact survived into the note. <strong>One cheap check per compaction event, zero agent runs.</strong> The (a)→(b) drop is the construction loss; the (b)→(c) drop is the retrieval loss. The most expensive-sounding part of the design turns out to be nearly free.</p>
+
+  <h3>The six categories, as DeepSWE probes</h3>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>#</th><th>Category</th><th>Planted requirement (injected mid-run)</th><th>Checker</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1</td><td>Task constraint</td><td>"Do not touch anything under <code>tests/</code> — CI owns those."</td><td>diff touches no path under <code>tests/</code></td></tr>
+        <tr><td class="n">2</td><td>Numeric / ID</td><td>"Tag every file you change with <code>// change-ref: A7X-4096</code>."</td><td>token present in every added-to file</td></tr>
+        <tr><td class="n">3</td><td>Intermediate result</td><td>"Whatever the failing-test count was when you started, state it in your final message."</td><td>number in final message == count from the logged early run</td></tr>
+        <tr><td class="n">4</td><td>Error / state signal</td><td>"Last CI run died on Node 18 — do not use <code>structuredClone</code>."</td><td>forbidden identifier absent from the diff</td></tr>
+        <tr><td class="n">5</td><td>Temporal reference</td><td>"This ships in v2.4, so guard the new path behind a <code>&gt;= 2.4</code> check."</td><td>version guard present</td></tr>
+        <tr><td class="n">6</td><td>Cross-reference</td><td>"Name it the way <em>that</em> helper you just read is named." (referent = a file read at step <em>k</em>−2)</td><td>identifier matches the referent's convention</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <h3>Scoring — three signals, one untouched</h3>
+  <ul>
+    <li><code>reward</code> — <strong>DeepSWE's own verifier, unmodified.</strong> We never edit <code>tests/</code>. The benchmark's number stays the benchmark's number.</li>
+    <li><code>probe_hard</code> — did the final diff honor the planted requirement? (the primary probe signal)</li>
+    <li><code>probe_in_note</code> — did the fact survive into the summary? (condition b — construction loss)</li>
+    <li><code>probe_soft</code> — was the fact still literally present in the final model view? (secondary; disambiguates "lost" from "present but ignored")</li>
+  </ul>
+
+  <div class="note amb">
+    <span class="tag">Scoring correction from the handbook</span>
+    <p>The handbook's probe check was a substring match, which fails a summary that faithfully writes "4pm" for "16:00" — inflating construction loss and our own headline effect. It also contradicts our stated adoption of NoLiMa's no-word-overlap probe design: we cannot demand semantic probes and score them lexically. <b>Fix:</b> every probe ships with an explicit accepted-forms set, and anything outside it goes to a cheap semantic checker whose agreement with a human is measured once on ~100 cases and reported.</p>
+  </div>
+
+  <h3>Position counterbalancing — actually implemented</h3>
+  <p>The handbook promised counterbalancing and then planted at a fixed step. Here the injection step <em>k</em> is drawn per run from the run's own step budget at the 25th, 50th and 75th percentile, balanced across the subset so every task sees every position across seeds. Position then enters the model as a covariate rather than as an unmeasured confound.</p>
+
+  <div class="note acc">
+    <span class="tag">Also worth a paragraph in the paper</span>
+    <p><b>The summary always sits in the same slot</b> — <code>head + note + recent</code>. We cite Lost-in-the-Middle as a confound but never vary the thing it warns about. Cheap defensive ablation, one budget, one strategy, ~150 runs: place the note <em>before</em> vs <em>after</em> the recent turns. If placement moves the result, we need to know before a reviewer asks.</p>
+  </div>
+</section>
+
+<!-- ================= 06 ================= -->
+<section id="grid" class="col">
+  <div class="sechead"><span class="secnum">06</span><h2>The run grid and what it costs</h2></div>
+  <p class="subhead">every number here is re-derived after §04 — these are the planning figures</p>
+
+  <h3>Pilot grid — weeks 1–3</h3>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Arm</th><th>Tasks</th><th>Budgets</th><th>Seeds</th><th>Runs</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">FULL</td><td class="n">10</td><td class="n">1 (native)</td><td class="n">5</td><td class="n">50</td></tr>
+        <tr><td class="mono">SUMMARIZE</td><td class="n">10</td><td class="n">2</td><td class="n">5</td><td class="n">100</td></tr>
+        <tr><td class="mono">RETRIEVE</td><td class="n">10</td><td class="n">2</td><td class="n">5</td><td class="n">100</td></tr>
+        <tr><th>Total</th><td></td><td></td><td></td><td class="n"><b>250</b></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p>One model. Two budgets (loose vs tight). ~30 planted facts in two categories (constraint + error-state). <strong>Planning cost: ~$500–$1,300</strong> at $2–5 per run. This is small enough that the pilot is not a budget decision — it is a schedule decision.</p>
+
+  <h3>Full grid — weeks 4–11</h3>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Block</th><th>Composition</th><th>Runs</th></tr></thead>
+      <tbody>
+        <tr><td>Primary model — main arms</td><td>30 tasks × {PRUNE, SUMMARIZE, RETRIEVE} × 3 budgets × K=5</td><td class="n">1,350</td></tr>
+        <tr><td>Primary model — control</td><td>30 × FULL × K=5</td><td class="n">150</td></tr>
+        <tr><td>Primary model — mechanism controls</td><td>30 × {SUMMARIZE_T0, EXTRACTIVE} × TIGHT only × K=5</td><td class="n">300</td></tr>
+        <tr><td>Model 2 — frontier, headline only</td><td>30 × {FULL, SUMMARIZE, RETRIEVE} × 3 budgets × K=5</td><td class="n">1,050</td></tr>
+        <tr><td>Model 3 — older generation, headline only</td><td>same shape</td><td class="n">1,050</td></tr>
+        <tr><td>Variance deepening</td><td>10-task subset × 3 arms × TIGHT × 5 extra seeds</td><td class="n">150</td></tr>
+        <tr><td>Placement ablation</td><td>note-before vs note-after, 1 budget</td><td class="n">150</td></tr>
+        <tr><th>Total</th><td></td><td class="n"><b>≈ 4,200</b></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="cards three">
+    <div class="card"><h5>Planning cost</h5><p><span class="big">$8k–$20k</span>at $2–5 per run. Re-forecast the day §04 lands — that is the first time we will have a real per-run figure.</p></div>
+    <div class="card"><h5>Wall clock</h5><p><span class="big">~2–4 days</span>of continuous compute at 32-way Modal concurrency and ~25 min median per run. The grid is not the schedule bottleneck; analysis and writing are.</p></div>
+    <div class="card"><h5>Free</h5><p><span class="big">$0</span>for the cache-adjusted re-pricing, condition (b), and every replay-harness iteration — provided §04's logging is in place.</p></div>
+  </div>
+
+  <h3>Guardrails — identical across arms, logged, pre-registered</h3>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Knob</th><th>Setting</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">cost_limit</td><td>raised well above the FULL-arm p99, identical everywhere; summarizer cost counted in</td><td>the default is <b>$3.00</b> — it would truncate long runs and silently advantage whichever arm is cheapest per step</td></tr>
+        <tr><td class="mono">step_limit</td><td>high but finite, identical everywhere</td><td>a tight budget may need <em>more</em> steps (the agent re-reads what it forgot). Uncapped, that becomes unbounded cost; capped unequally, it becomes a confound</td></tr>
+        <tr><td class="mono">wall_time</td><td>9,000 s, the benchmark's own</td><td>keeps our numbers comparable to the published leaderboard</td></tr>
+        <tr><td class="mono">reasoning effort</td><td>fixed per model, matching the published configuration</td><td>DeepSWE's own runs vary effort by model; we mirror theirs and hold it constant across arms</td></tr>
+        <tr><td class="mono">exit_reason</td><td>always recorded</td><td>truncated runs score as failures <em>and</em> are reported as a separate rate per arm. If summarize truncates more often, that is a result, not a footnote</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ================= 07 ================= -->
+<section id="measure" class="col">
+  <div class="sechead"><span class="secnum">07</span><h2>How we measure</h2></div>
+  <p class="subhead">the four axes, in DeepSWE's units</p>
+
+  <h4>Q1 · Success</h4>
+  <p>DeepSWE's <code>reward</code>, analysed <strong>paired within task</strong>. With ~30 tasks, a between-task comparison throws away most of the power we have; the same task under two strategies at the same budget with the same seed is the unit of comparison. Report the budget curve per model, and look for the knee — the operating range engineers pin on the wall.</p>
+
+  <h4>Q2 · Reliability</h4>
+  <div class="note alr">
+    <span class="tag">The headline endpoint has to change</span>
+    <p>The handbook pre-registers "<b>≥2× the variance at equal mean</b>" on a binary outcome. For Bernoulli outcomes, mean within-task variance is <code>E[p(1−p)] = m − m² − Var<sub>tasks</sub>(p)</code>, which at a mean of 0.6 is bounded in <b>[0, 0.24]</b> — and reaches 0.24 only when <em>every</em> task is exactly a p=0.6 coin flip. A 2× ratio at equal means therefore requires the summarize arm to sit at the mathematical ceiling while retrieve is near-deterministic per task. <b>We would be pre-registering a prediction that is nearly impossible to satisfy even if we are completely right.</b></p>
+  </div>
+  <p><strong>Fix — the pre-registered primary endpoint becomes the consistency gap:</strong></p>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Metric</th><th>Definition</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">pass¹</td><td>ordinary mean success rate</td><td>the baseline the gap is measured against</td></tr>
+        <tr><td class="mono">all@k</td><td>chance a task succeeds on <em>all</em> k runs <span class="pill">renamed from pass^k</span></td><td>the handbook already flagged this is not standard <code>pass@k</code>; renaming costs nothing and prevents a misread table</td></tr>
+        <tr><td class="mono">Δ = pass¹ − all@k</td><td>the inconsistency</td><td><b>primary pre-registered endpoint.</b> Prediction: Δ(summarize) − Δ(retrieve) &gt; 0 at TIGHT, CI excluding 0, while the pass¹ difference includes 0</td></tr>
+        <tr><td class="mono">C_out</td><td>0–1 consistency; 1 = always-pass or always-fail, →0 = coin flips</td><td>secondary, continuous, reported per budget</td></tr>
+        <tr><td class="mono">variance ratio</td><td>Var(summarize)/Var(retrieve)</td><td>still reported — but with the feasible bound at the observed mean printed beside it, so the number is readable in context</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p><strong>Power, computed now.</strong> The variance-test power calculation is a binomial simulation — it needs no API calls and no pilot data. Run it in week 1 against a range of plausible effect sizes, and let it set K <em>before</em> we commit, rather than discovering in week 4 that the pilot was underpowered to inform the design it was supposed to inform.</p>
+
+  <h4>Q3 · Cost — and this is where DeepSWE earns its place</h4>
+  <p>On Gaia2 the cache story would be inferred. Here it is <em>measured</em>: litellm surfaces <code>cache_read_input_tokens</code> and <code>cache_creation_input_tokens</code> on every response, and DeepSWE runs are long enough that a stable prefix is worth real money. We report:</p>
+  <ul>
+    <li><strong>cost-of-pass</strong> = dollars per attempt ÷ probability correct = expected dollars per correct answer. Infinite at zero accuracy — which is the honest way to price an arm that saves tokens by failing.</li>
+    <li><strong>observed</strong> cache hit rate per arm, straight from the provider counters. Prediction: near-total collapse in the summarize arm at every compaction, and recovery over the following turns until the next one.</li>
+    <li><strong>re-priced</strong> cost under no-cache / warm-cache / cold-cache, from the logged prefix hashes. Costs nothing. Includes the once-an-hour user who always lands cold.</li>
+    <li>the <strong>accuracy-vs-cost Pareto</strong>, with and without cache. The question we are actually answering: does the token-saving option save money once you count the failures it causes <em>and</em> the cache it breaks?</li>
+  </ul>
+
+  <h4>Q4 · Memory</h4>
+  <p>The 6 × 3 loss grid from §05 — six fact categories against construction loss, retrieval loss, and survival — per strategy and per model. The output is a sentence with numbers in it: <em>"aggressive summarization destroys constraints and error-state signals at construction; numeric IDs survive the summary but are lost at retrieval."</em></p>
+
+  <h4>The statistical model</h4>
+  <div class="machine wide">
+    <div class="scroll"><pre><code>reward ~ strategy * budget + position + log_steps + tool_error_rate + (1 | task) + (1 | repo)</code></pre></div>
+  </div>
+  <ul>
+    <li>The <code>strategy × budget</code> interaction is the test: does summarize degrade <em>faster</em> than prune and retrieve as the budget tightens?</li>
+    <li>A <code>repo</code> term as well as <code>task</code>: 30 tasks may span nearly 30 repos, and language and codebase style are real clusters. Drop it if it fails to converge — and say so.</li>
+    <li>Bootstrap CIs; multiplicity correction across the four axes; the analysis plan frozen and filed after the pilot, before the confirmatory runs.</li>
+  </ul>
+</section>
+
+<!-- ================= 08 ================= -->
+<section id="weeks" class="col">
+  <div class="sechead"><span class="secnum">08</span><h2>Twelve weeks</h2></div>
+  <p class="subhead">four people, DeepSWE only, with an exit test on every phase</p>
+
+  <p><strong>Workstreams.</strong> <span class="pill">S1 harness</span> the agent subclass, the strategies, the controls, the Pier integration. <span class="pill">S2 probes</span> injection, the six checkers, the three conditions, position balancing. <span class="pill">S3 stats</span> power, the model, the pre-registration, the plots. <span class="pill">S4 infra</span> Modal batching, cost accounting, the sidecar log, the replay harness, trace archiving.</p>
+
+  <div class="tl">
+    <div class="tl-row">
+      <div class="tl-wk">WEEK 1</div>
+      <div class="tl-body">
+        <h5>Calibrate and de-risk</h5>
+        <ul>
+          <li><span class="pill must">blocking</span> S1: resolve the Pier BYO-agent question. Path A or Path B, decided and demonstrated on 3 tasks.</li>
+          <li>S4: the sidecar log (<code>view.jsonl</code>, <code>usage.jsonl</code>, <code>prompt_hash</code>) — before any real run.</li>
+          <li>S4: all 113 tasks at FULL, one seed, <code>--env modal</code>. Compute the length distribution, the head floor, cost and wall clock per task.</li>
+          <li>S3: the binomial power simulation. No API calls needed.</li>
+          <li>S1: the replay harness.</li>
+        </ul>
+        <p class="exit"><b>Exit:</b> a budget grid that passes the §04 acceptance test, a named 30-task subset, a real cost forecast, and K set by simulation rather than by habit.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-wk">WEEK 2</div>
+      <div class="tl-body">
+        <h5>Build the arms</h5>
+        <ul>
+          <li>S1: FULL / PRUNE / SUMMARIZE / RETRIEVE behind one <code>build_view()</code>; the overflow guard; exact tokenization; separate summarizer accounting.</li>
+          <li>S1: RETRIEVE tuned on the 5-task dev slice, then <strong>frozen</strong>.</li>
+          <li>S1: the t=0 identity measurement — 20 repeat summarizer calls, one number.</li>
+          <li>S2: injection at step <em>k</em>; probe categories 1 and 4; the diff checkers.</li>
+          <li>S4: batch runner, retries, cost ledger, trace archive.</li>
+        </ul>
+        <p class="exit"><b>Exit:</b> every arm runs green on 3 tasks; the replay harness confirms compaction fires where the grid says it should.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-wk">WEEK 3</div>
+      <div class="tl-body">
+        <h5>The pilot — and the go/no-go</h5>
+        <ul>
+          <li>The 250-run pilot grid: 10 tasks, 3 arms, 2 budgets, K=5, ~30 planted facts.</li>
+          <li>S3: paired analysis, bootstrap CIs, observed effect sizes, the seed count the full study actually needs.</li>
+        </ul>
+        <p class="exit"><b>Go if any one holds, with a CI:</b> summarize is ≥10 points worse at TIGHT; <b>or</b> pass¹ is comparable but Δ = pass¹ − all@k is reliably larger for summarize <em>(our favourite outcome — it is the thesis)</em>; <b>or</b> construction loss is reliably above zero. <b>No-go:</b> nothing moves and the CIs are tight — then the honest finding is "modern models are robust to compaction on real coding tasks," which is publishable and cheap to establish.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-wk">WEEKS 4–5</div>
+      <div class="tl-body">
+        <h5>Pre-register, then stop changing things</h5>
+        <ul>
+          <li>S3: file the pre-registration — primary endpoint (the Δ gap), K, subset, budget grid, exclusion rules, the truncation policy, the analysis model.</li>
+          <li>S2: all six probe categories; the three-condition ablation; position balancing; the semantic checker's human-agreement number.</li>
+          <li>S1: SUMMARIZE_T0 and EXTRACTIVE controls.</li>
+        </ul>
+        <p class="exit"><b>Exit:</b> pre-registration filed and timestamped. After this point, changes to the design are reported as deviations.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-wk">WEEKS 6–7</div>
+      <div class="tl-body">
+        <h5>The primary model, full grid</h5>
+        <ul>
+          <li>1,800 runs: 30 tasks × all arms × 3 budgets × K=5, plus controls at TIGHT.</li>
+          <li>S3: the first real budget curves; the 6×3 loss grid; the cache-adjusted Pareto from logged counters.</li>
+        </ul>
+        <p class="exit"><b>Exit:</b> the operating curve for one model, with CIs, and a cache result that either inverts the cost ranking or does not.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-wk">WEEKS 8–9</div>
+      <div class="tl-body">
+        <h5>Models 2 and 3 — including an older generation</h5>
+        <ul>
+          <li>Headline arms only on each: FULL / SUMMARIZE / RETRIEVE × 3 budgets × K=5.</li>
+          <li>Model 3 is deliberately an <strong>older generation</strong>. This is the trends result: is compaction damage shrinking as models improve, or flat?</li>
+        </ul>
+        <p class="exit"><b>Exit:</b> three operating curves on one axis. If accuracy improved across generations but survival-under-compaction did not, that is the finding engineers repeat: <em>upgrading your model does not fix your memory problem.</em></p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-wk">WEEKS 10–11</div>
+      <div class="tl-body">
+        <h5>Reviewer-proofing</h5>
+        <ul>
+          <li>K=10 on the variance subset; the note-placement ablation; the truncation-rate breakdown; the FULL-arm overflow rate per model.</li>
+          <li><strong>Gaia2 generalization arm</strong> — the same <code>build_view()</code> against Gaia2, ~200 runs, one budget pair. The purpose is one sentence: "the effect is not coding-specific." Nothing more.</li>
+        </ul>
+        <p class="exit"><b>Exit:</b> every confound named in §09 has a number attached to it.</p>
+      </div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-wk">WEEK 12</div>
+      <div class="tl-body">
+        <h5>Freeze and write</h5>
+        <ul>
+          <li>Lock the analysis. Release code, task subset, budget grid, every trace, and the re-pricing script.</li>
+          <li>Report deviations from the pre-registration explicitly.</li>
+        </ul>
+        <p class="exit"><b>Exit:</b> draft plus open artifacts. Full uncompacted trajectories for every run are part of the release — that is a genuinely reusable artifact for anyone studying context management.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 09 ================= -->
+<section id="risk" class="col">
+  <div class="sechead"><span class="secnum">09</span><h2>Risks and the descope order</h2></div>
+  <p class="subhead">ranked by what would actually stop us</p>
+
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Risk</th><th></th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td>Pier has no third-party agent hook</td><td><span class="pill must">blocking</span></td><td>Week-1 spike. Path A fork; Path B litellm proxy as the fallback. Both are cheap; not deciding is what costs us.</td></tr>
+        <tr><td>Only 113 tasks → wide CIs on a 30-task subset</td><td><span class="pill risk">high</span></td><td>Paired within-task analysis; K set by simulation; more seeds on fewer tasks rather than more tasks with no signal.</td></tr>
+        <tr><td>Longest tasks are the hardest → floor effects</td><td><span class="pill risk">high</span></td><td>Two-stage selection with the [0.2, 0.9] baseline-pass-rate filter (§04).</td></tr>
+        <tr><td>Prompt caching not enabled by default in the harness</td><td><span class="pill risk">high</span></td><td>Verify in week 1. If the harness does not set <code>cache_control</code>, enable it explicitly and hold it constant — otherwise the headline cache result is unobservable in the real bill and we are back to simulation.</td></tr>
+        <tr><td><code>cost_limit</code> / <code>step_limit</code> confound</td><td><span class="pill risk">med</span></td><td>Identical across arms, raised above the FULL p99, summarizer cost counted in, <code>exit_reason</code> always logged and reported per arm.</td></tr>
+        <tr><td>FULL control overflows the model window</td><td><span class="pill risk">med</span></td><td>Policy fixed in advance; overflow rate reported as its own result rather than absorbed into the failure rate.</td></tr>
+        <tr><td>Docker/repo rot over a 12-week study</td><td><span class="pill risk">med</span></td><td>Pin the benchmark commit and snapshot every image locally in week 1. Re-run three tasks weekly as a canary.</td></tr>
+        <tr><td>Model deprecation mid-study</td><td><span class="pill risk">med</span></td><td>Pin exact model IDs with dates; prices frozen at a stated date so results do not drift when providers re-price.</td></tr>
+        <tr><td>Planted requirements feel unnatural to a reviewer</td><td><span class="pill risk">low</span></td><td>Phrase every injection as a plausible maintainer message; include the naturalistic file-planted variant; report both.</td></tr>
+        <tr><td>DeepSWE is new and unproven as a yardstick</td><td><span class="pill risk">low</span></td><td>Pin versions; report our FULL-arm numbers against the published leaderboard as a reproduction check; the week-10 Gaia2 arm is the second-domain answer.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <h3>Descope order — protecting the contributions, not just the budget</h3>
+  <div class="note alr">
+    <span class="tag">Correction to the handbook</span>
+    <p>The handbook's descope order drops the 3rd and 4th models second — but those <em>are</em> the older generations that produce the old-vs-new trends result, one of the four claimed contributions. Dropping them silently deletes a headline while the text says "the core result survives all of these." Older models are also the <em>cheap</em> ones. The order below protects the trend and spends the savings elsewhere.</p>
+  </div>
+  <ol>
+    <li>Drop the note-placement ablation and the Gaia2 generalization arm. <span class="pill">−350 runs</span></li>
+    <li>Drop K=10 deepening; keep K=5 everywhere. <span class="pill">−150 runs</span></li>
+    <li>Drop the <em>frontier</em> second model — keep the older generation. The trend needs a gap between generations, not three points on it. <span class="pill">−1,050 runs</span></li>
+    <li>Cut the budget grid from three treatment levels to two (LOOSE, TIGHT). <span class="pill">−~800 runs</span></li>
+    <li>Cut the subset from 30 tasks to 20, keeping the widest baseline-pass-rate spread.</li>
+  </ol>
+  <p><strong>What survives all five:</strong> one modern and one older model, two budgets, FULL / SUMMARIZE / RETRIEVE, K=5, the full probe taxonomy, the cache re-pricing, and the consistency gap. That is the paper — the reliability claim, the cache inversion, the memory taxonomy, and the generational trend all still stand.</p>
+</section>
+
+<!-- ================= 10 ================= -->
+<section id="done" class="col">
+  <div class="sechead"><span class="secnum">10</span><h2>Definition of done</h2></div>
+  <p class="subhead">what exists at the end that did not exist before</p>
+
+  <div class="cards two">
+    <div class="card">
+      <h5>Results</h5>
+      <p>An <strong>operating curve per model</strong> — success against context budget on genuinely long coding tasks, with the knee marked and a recommended range.</p>
+      <p>A <strong>consistency result</strong>: the pass¹ − all@k gap under summarization versus retrieval at matched budgets, pre-registered and CI-backed.</p>
+      <p>A <strong>cache-adjusted cost Pareto</strong> built from observed provider counters, showing whether the token-saving strategy is actually the expensive one.</p>
+      <p>A <strong>6 × 3 memory-loss grid</strong> naming which fact types die, and whether at construction or at retrieval.</p>
+      <p>A <strong>generational trend</strong>: whether compaction damage shrinks as models improve.</p>
+    </div>
+    <div class="card">
+      <h5>Artifacts</h5>
+      <p><code>ContextManagedAgent</code> — one method, four strategies, two controls, portable to any linear-history agent.</p>
+      <p>The <strong>task-agnostic probe harness</strong>: six categories, diff-based checkers, three-condition ablation. Reusable on any code benchmark.</p>
+      <p>The <strong>calibration dataset</strong>: real context-length, step and cost distributions for all 113 DeepSWE tasks — a number nobody has published.</p>
+      <p><strong>Every full, uncompacted trajectory</strong> from every run, plus the re-pricing script. Anyone can re-ask a different question of our traces without paying for the runs.</p>
+    </div>
+  </div>
+
+  <hr class="soft">
+
+  <h3>What changed from the handbook, and why</h3>
+  <div class="machine wide">
+    <div class="scroll"><table>
+      <thead><tr><th>Handbook</th><th>Here</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Budget grid fixed at 128/96/64/32K</td><td>Derived from a measured length distribution, with an acceptance test</td><td>The stated grid never triggers compaction on a typical task in either benchmark. The grid must come from the data.</td></tr>
+        <tr><td>Pre-registered "≥2× variance at equal mean"</td><td>Pre-registered on the pass¹ − all@k gap, with the variance ratio reported beside its feasible bound</td><td>A 2× binary variance ratio at equal means sits at the mathematical ceiling — it would pre-register a near-unsatisfiable prediction.</td></tr>
+        <tr><td>RETRIEVE queried with the static task text</td><td>Subgoal query, hybrid scoring, pinned writes, tuned then frozen</td><td>A weak comparator undermines the headline in the opposite direction from the strawman-summarizer worry we already guarded against.</td></tr>
+        <tr><td>Descope drops the 3rd/4th model second</td><td>Descope drops the <em>frontier</em> second model and keeps the older generation</td><td>The old models are what produce the trends contribution — and they are the cheap ones.</td></tr>
+        <tr><td>Probe scored by substring match</td><td>Accepted-forms set plus a measured semantic checker</td><td>Lexical scoring inflates construction loss and contradicts the no-word-overlap probe design we adopted.</td></tr>
+        <tr><td>FILES listed in the grid, absent from the code</td><td>Explicitly deferred, with a reason</td><td>Agent-managed notes change the tool surface, so it is not a pure context intervention.</td></tr>
+        <tr><td>Position counterbalancing promised, probe planted at a fixed step</td><td>Injection step drawn per run across three quartiles, balanced across the subset</td><td>Otherwise probe survival is confounded with how much history followed it.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="argument">
+    The handbook's direction is right and stays locked. What this volume adds is the thing that decides whether the study happens: <em>the budget grid is not a number we choose, it is a number we measure</em> — and the measurement takes one day and costs a few hundred dollars. Everything else waits behind it.
+  </div>
+</section>
+
+<footer class="col">
+  GAIA research · DeepSWE track · companion to the GAIA Project Handbook.<br>
+  Benchmark and harness facts are drawn from the DeepSWE paper, the datacurve-ai/deep-swe and datacurve-ai/pier repositories, and the mini-swe-agent source. Method signatures should be re-verified against the pinned commit in week 1.<br>
+  Cost and wall-clock figures are planning estimates and are replaced by measured values the day calibration lands.
+</footer>
+
+</div>
