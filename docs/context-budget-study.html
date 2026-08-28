@@ -208,6 +208,11 @@ footer{width:var(--col);margin-top:64px;padding-top:22px;border-top:1px solid va
   <h1>What does the context budget cost a long-running agent?</h1>
   <p class="lede">Every deployed coding agent sets a token budget and compacts when it passes it. That budget is guessed, never measured. We sweep it on real coding tasks and measure three things: <strong>does success fall, does the agent get less consistent, and where is the dollar-per-correct-answer minimum?</strong> This version is built for a hard $200 ceiling on an <strong>unfiltered random sample</strong> — enough to draw all three curves, and to extend cleanly when more budget arrives.</p>
 
+  <div class="note amb" style="margin-top:26px">
+    <span class="tag">Status 2026-08-28 · frozen after E1, resumable</span>
+    <p><b>E1 census complete</b> (12/12; results in the repo's <code>results/E1.md</code>): pass¹ 6/12 vs published 37% (reproduction OK) · peak context p50 154K / p90 260K / max 587K · cache-hit 88–96% · ~70% of output tokens are thinking. Measured economics (mean $3.24 per FULL run) price the planned grid at <b>$300–450</b>, over the $200 cap — per the frozen rules the sample is never trimmed, so <b>the grid waits for funding</b>. Restart shapes and prices are in the repo README.</p>
+  </div>
+
   <dl class="strip">
     <div><dt>Calibration</dt><dd>$34</dd></div>
     <div><dt>The grid</dt><dd>$124</dd></div>
