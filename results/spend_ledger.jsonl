@@ -1,0 +1,15 @@
+{"usd": 1.991737, "block": "E0", "run_id": "E0-abs-module-cache-flags-FULL-0-1787935445", "ts": 1787936361.5359418}
+{"usd": 0.349205, "block": "E1", "run_id": "E1-abs-module-cache-flags-FULL-0-1787938383", "ts": 1787938598.576677}
+{"usd": 2.231156, "block": "E1", "run_id": "E1-abs-module-cache-flags-FULL-0-1787938841", "ts": 1787939504.1128829}
+{"usd": 1.610298, "block": "E1", "run_id": "E1-abs-module-cache-flags-FULL-0-1787939607", "ts": 1787940514.124883}
+{"usd": 1.711641, "block": "E1", "run_id": "E1-etree-xml-diff-patch-FULL-0-1787939608", "ts": 1787940603.49906}
+{"usd": 0.981709, "block": "E1", "run_id": "E1-happy-dom-deterministic-intersectionobserver-FULL-0-1787940514", "ts": 1787940986.797355}
+{"usd": 3.904853, "block": "E1", "run_id": "E1-helm-unified-manifest-stream-FULL-0-1787939609", "ts": 1787941643.009147}
+{"usd": 1.681375, "block": "E1", "run_id": "E1-vulture-persistent-analysis-cache-FULL-0-1787940986", "ts": 1787941643.901027}
+{"usd": 3.227734, "block": "E1", "run_id": "E1-koota-query-predicates-FULL-0-1787941643", "ts": 1787943496.210048}
+{"usd": 7.041506, "block": "E1", "run_id": "E1-claude-code-by-agents-recursive-delegation-FULL-0-1787941643", "ts": 1787943598.80055}
+{"usd": 7.029727, "block": "E1", "run_id": "E1-scriggo-method-declarations-FULL-0-1787940603", "ts": 1787943933.587175}
+{"usd": 1.996804, "block": "E1", "run_id": "E1-scc-bounded-memory-spilling-FULL-0-1787943496", "ts": 1787944222.461162}
+{"usd": 2.960461, "block": "E1", "run_id": "E1-testem-per-launcher-reports-FULL-0-1787943933", "ts": 1787945012.685945}
+{"usd": 3.220855, "block": "E1", "run_id": "E1-arcane-drift-detection-baselines-FULL-0-1787943598", "ts": 1787945367.494729}
+{"usd": 3.505353, "block": "E1", "run_id": "E1-mashumaro-flattened-dataclass-fields-FULL-0-1787944222", "ts": 1787945529.350421}

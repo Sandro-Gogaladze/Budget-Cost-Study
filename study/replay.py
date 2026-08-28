@@ -20,13 +20,25 @@ from study.tokens import CalibratedEstimator
 ABS_SWEEP = [16_000, 24_000, 32_000, 48_000, 64_000, 96_000, 128_000, 160_000, 192_000]
 
 
-def load_traj(path: str) -> list[dict]:
+def load_traj(path: str):
     with open(path) as f:
-        return json.load(f)
+        msgs = json.load(f)
+    # calibrate against the run's ACTUAL token counts from the sidecar
+    import os
+    ratio, peak_actual = 1.0, None
+    steps_path = os.path.join(os.path.dirname(path), "steps.jsonl")
+    if os.path.exists(steps_path):
+        rows = [json.loads(l) for l in open(steps_path) if l.strip()]
+        peak_actual = max((r.get("view_tokens", 0) for r in rows), default=None)
+    return msgs, peak_actual
 
 
-def replay_one(messages: list[dict], budget: int, strategy: str) -> dict:
+def replay_one(traj, budget: int, strategy: str) -> dict:
+    messages, peak_actual = traj
     est = CalibratedEstimator()
+    naive_peak = est.tokens(messages)
+    if peak_actual:
+        est.ratio = peak_actual / max(1, naive_peak)   # match the real tokenizer
     peak = est.tokens(messages)
     head = est.tokens(messages[:HEAD_N])
     state = ViewState()
@@ -40,7 +52,9 @@ def replay_one(messages: list[dict], budget: int, strategy: str) -> dict:
     overflows = sum(1 for e in state.events if e["event"] == "recent_overflow")
     return {
         "strategy": strategy, "budget": budget, "peak": peak, "head": head,
+        "treated": peak > budget,
         "compactions": state.compactions,
+        "view_tokens": view_tokens,
         "median_view": sorted(view_tokens)[len(view_tokens) // 2] if view_tokens else 0,
         "overflow_rate": overflows / max(1, len(view_tokens)),
     }
@@ -66,15 +80,15 @@ def main(run_globs: list[str]) -> None:
         print("no trajectories found"); return
     trajs = [load_traj(p) for p in paths]
     print(f"{len(trajs)} trajectories\n")
-    print(f"{'budget':>8} {'strategy':<10} {'treated':>8} {'>=3 comp':>9} {'med view/head':>14} {'ovfl':>6}")
+    print(f"{'budget':>8} {'treated':>8} {'>=3 comp':>9} {'med view/head':>14} {'ovfl':>6} {'pred $/SUM run':>14}")
     for budget in ABS_SWEEP:
-        for strat in ("SUMMARIZE", "PRUNE", "RETRIEVE"):
-            rows = [replay_one(t, budget, strat) for t in trajs]
-            ge1 = sum(r["compactions"] >= 1 for r in rows) / len(rows)
-            ge3 = sum(r["compactions"] >= 3 for r in rows) / len(rows)
-            vh = sorted(r["median_view"] / max(1, r["head"]) for r in rows)[len(rows) // 2]
-            ov = max(r["overflow_rate"] for r in rows)
-            print(f"{budget:>8,} {strat:<10} {ge1:>8.0%} {ge3:>9.0%} {vh:>14.1f} {ov:>6.0%}")
+        rows = [replay_one(t, budget, "SUMMARIZE") for t in trajs]
+        tr = sum(r["treated"] for r in rows) / len(rows)
+        ge3 = sum(r["compactions"] >= 3 for r in rows) / len(rows)
+        vh = sorted(r["median_view"] / max(1, r["head"]) for r in rows)[len(rows) // 2]
+        ov = max(r["overflow_rate"] for r in rows)
+        pc = sum(predicted_cost_usd(r["view_tokens"]) for r in rows) / len(rows)
+        print(f"{budget:>8,} {tr:>8.0%} {ge3:>9.0%} {vh:>14.1f} {ov:>6.0%} {pc:>14.2f}")
     print("\npick (then freeze in config.BUDGETS):"
           "\n  TIGHT = largest value with >=1 compaction on >=75% of tasks AND >=3 on >=50%"
           "\n  LOOSE = value treating 30-50% of tasks"

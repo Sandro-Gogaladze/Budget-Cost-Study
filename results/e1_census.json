@@ -1,0 +1,134 @@
+[
+  {
+    "task_id": "abs-module-cache-flags",
+    "exit_reason": "Submitted",
+    "steps": 104,
+    "peak_view_tokens": 69492,
+    "cache_hit": 0.891,
+    "reasoning_share": 0.731,
+    "total_cost_usd": 1.610298,
+    "reward": 1,
+    "partial": 1.0
+  },
+  {
+    "task_id": "arcane-drift-detection-baselines",
+    "exit_reason": "Submitted",
+    "steps": 124,
+    "peak_view_tokens": 152356,
+    "cache_hit": 0.912,
+    "reasoning_share": 0.563,
+    "total_cost_usd": 3.220855,
+    "reward": 1,
+    "partial": 1.0
+  },
+  {
+    "task_id": "claude-code-by-agents-recursive-delegation",
+    "exit_reason": "LimitsExceeded",
+    "steps": 84,
+    "peak_view_tokens": 586840,
+    "cache_hit": 0.956,
+    "reasoning_share": 0.7,
+    "total_cost_usd": 7.041506,
+    "reward": 1,
+    "partial": 1.0
+  },
+  {
+    "task_id": "etree-xml-diff-patch",
+    "exit_reason": "Submitted",
+    "steps": 58,
+    "peak_view_tokens": 120007,
+    "cache_hit": 0.912,
+    "reasoning_share": 0.691,
+    "total_cost_usd": 1.711641,
+    "reward": 1,
+    "partial": 1.0
+  },
+  {
+    "task_id": "happy-dom-deterministic-intersectionobserver",
+    "exit_reason": "Submitted",
+    "steps": 43,
+    "peak_view_tokens": 126257,
+    "cache_hit": 0.881,
+    "reasoning_share": 0.716,
+    "total_cost_usd": 0.981709,
+    "reward": 0,
+    "partial": 0.826
+  },
+  {
+    "task_id": "helm-unified-manifest-stream",
+    "exit_reason": "Submitted",
+    "steps": 147,
+    "peak_view_tokens": 260256,
+    "cache_hit": 0.942,
+    "reasoning_share": 0.696,
+    "total_cost_usd": 3.904853,
+    "reward": 1,
+    "partial": 1.0
+  },
+  {
+    "task_id": "koota-query-predicates",
+    "exit_reason": "Submitted",
+    "steps": 114,
+    "peak_view_tokens": 164554,
+    "cache_hit": 0.938,
+    "reasoning_share": 0.573,
+    "total_cost_usd": 3.227734,
+    "reward": 0,
+    "partial": 0.972
+  },
+  {
+    "task_id": "mashumaro-flattened-dataclass-fields",
+    "exit_reason": "Submitted",
+    "steps": 125,
+    "peak_view_tokens": 154324,
+    "cache_hit": 0.894,
+    "reasoning_share": 0.765,
+    "total_cost_usd": 3.505353,
+    "reward": 0,
+    "partial": 0.002
+  },
+  {
+    "task_id": "scc-bounded-memory-spilling",
+    "exit_reason": "Submitted",
+    "steps": 118,
+    "peak_view_tokens": 84582,
+    "cache_hit": 0.907,
+    "reasoning_share": 0.049,
+    "total_cost_usd": 1.996804,
+    "reward": 0,
+    "partial": 0.991
+  },
+  {
+    "task_id": "scriggo-method-declarations",
+    "exit_reason": "LimitsExceeded",
+    "steps": 279,
+    "peak_view_tokens": 204674,
+    "cache_hit": 0.938,
+    "reasoning_share": 0.752,
+    "total_cost_usd": 7.029727,
+    "reward": 0,
+    "partial": 0.979
+  },
+  {
+    "task_id": "testem-per-launcher-reports",
+    "exit_reason": "Submitted",
+    "steps": 93,
+    "peak_view_tokens": 153556,
+    "cache_hit": 0.915,
+    "reasoning_share": 0.68,
+    "total_cost_usd": 2.960461,
+    "reward": 1,
+    "partial": 1.0
+  },
+  {
+    "task_id": "vulture-persistent-analysis-cache",
+    "exit_reason": "Submitted",
+    "steps": 71,
+    "peak_view_tokens": 100759,
+    "cache_hit": 0.902,
+    "reasoning_share": 0.706,
+    "total_cost_usd": 1.681375,
+    "reward": 1,
+    "partial": 1.0
+  }
+]

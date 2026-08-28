@@ -1,0 +1,14 @@
+{
+  "abs-module-cache-flags": 69492,
+  "arcane-drift-detection-baselines": 152356,
+  "claude-code-by-agents-recursive-delegation": 586840,
+  "etree-xml-diff-patch": 120007,
+  "happy-dom-deterministic-intersectionobserver": 126257,
+  "helm-unified-manifest-stream": 260256,
+  "koota-query-predicates": 164554,
+  "mashumaro-flattened-dataclass-fields": 154324,
+  "scc-bounded-memory-spilling": 84582,
+  "scriggo-method-declarations": 204674,
+  "testem-per-launcher-reports": 153556,
+  "vulture-persistent-analysis-cache": 100759
+}
