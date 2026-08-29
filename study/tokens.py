@@ -13,10 +13,13 @@ CHARS_PER_TOKEN = 4.0
 
 
 def _msg_chars(m: dict) -> int:
-    c = m.get("content", "")
+    c = m.get("content") or ""
     if isinstance(c, list):  # multimodal parts
         c = "".join(p.get("text", "") for p in c if isinstance(p, dict))
-    return len(c) + len(m.get("role", "")) + 8  # small per-message overhead
+    n = len(c)
+    for tc in m.get("tool_calls") or []:      # native tool-calling: command text
+        n += len(str((tc.get("function") or {}).get("arguments") or "")) + 24
+    return n + len(m.get("role", "")) + 8     # small per-message overhead
 
 
 class CalibratedEstimator:

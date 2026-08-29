@@ -27,10 +27,13 @@ class ViewState:
 
 # --------------------------------------------------------------------- utils
 def _content(m: dict) -> str:
-    c = m.get("content", "")
+    c = m.get("content") or ""
     if isinstance(c, list):
         c = "".join(p.get("text", "") for p in c if isinstance(p, dict))
-    return c or ""
+    parts = [c] if isinstance(c, str) else [""]
+    for tc in m.get("tool_calls") or []:      # commands live in arguments
+        parts.append(str((tc.get("function") or {}).get("arguments") or ""))
+    return " ".join(p for p in parts if p)
 
 
 _WRITE_RE = re.compile(
@@ -42,17 +45,37 @@ def is_write_msg(m: dict) -> bool:
     return m.get("role") == "assistant" and bool(_WRITE_RE.search(_content(m)))
 
 
+def group_turns(body: list[dict]) -> list[list[dict]]:
+    """Group into atomic turns: an assistant message plus the tool/user
+    observations that answer it. Never split — an orphaned tool response is an
+    API error under native tool-calling, and a command without its output is
+    meaningless under the text protocol."""
+    groups: list[list[dict]] = []
+    for m in body:
+        if m.get("role") == "assistant" or not groups:
+            groups.append([m])
+        else:
+            groups[-1].append(m)
+    return groups
+
+
+def _flat(groups: list[list[dict]]) -> list[dict]:
+    return [m for g in groups for m in g]
+
+
 def keep_last_that_fit(body: list[dict], room: int, est) -> list[dict]:
-    out: list[dict] = []
-    for m in reversed(body):
-        if est.tokens(out + [m]) > room:
+    groups = group_turns(body)
+    out: list[list[dict]] = []
+    for g in reversed(groups):
+        if est.tokens(_flat([g] + out)) > room:
             break
-        out.insert(0, m)
-    return out
+        out.insert(0, g)
+    return _flat(out)
 
 
 def keep_last_n(body: list[dict], n: int) -> list[dict]:
-    return body[-n:] if n > 0 else []
+    """Last n TURNS (not messages)."""
+    return _flat(group_turns(body)[-n:]) if n > 0 else []
 
 
 # --------------------------------------------------------------------- BM25
@@ -97,24 +120,22 @@ def subgoal_query(messages: list[dict]) -> str:
 
 def retrieve_view(messages: list[dict], room: int, est, keep_recent: int) -> list[dict]:
     head, body = messages[:HEAD_N], messages[HEAD_N:]
-    pinned_idx = set(range(max(0, len(body) - keep_recent), len(body)))
-    pinned_idx |= {i for i, m in enumerate(body) if is_write_msg(m)}
+    groups = group_turns(body)
+    pinned = set(range(max(0, len(groups) - keep_recent), len(groups)))
+    pinned |= {i for i, g in enumerate(groups) if any(is_write_msg(m) for m in g)}
     q = subgoal_query(messages)
-    scores = bm25_scores(q, [_content(m) for m in body])
-    ranked = sorted(range(len(body)), key=lambda i: -scores[i])
-    chosen = set()
-    # pins first (most recent writes outrank old ones), then by score
-    for i in sorted(pinned_idx, reverse=True):
-        cand = sorted(chosen | {i})
-        if est.tokens([body[j] for j in cand]) <= room:
+    scores = bm25_scores(q, [" ".join(_content(m) for m in g) for g in groups])
+    ranked = sorted(range(len(groups)), key=lambda i: -scores[i])
+    chosen: set[int] = set()
+    def fits(cand):
+        return est.tokens(_flat([groups[j] for j in sorted(cand)])) <= room
+    for i in sorted(pinned, reverse=True):
+        if fits(chosen | {i}):
             chosen.add(i)
     for i in ranked:
-        if i in chosen:
-            continue
-        cand = sorted(chosen | {i})
-        if est.tokens([body[j] for j in cand]) <= room:
+        if i not in chosen and fits(chosen | {i}):
             chosen.add(i)
-    return head + [body[i] for i in sorted(chosen)]  # chronological order
+    return head + _flat([groups[i] for i in sorted(chosen)])  # chronological
 
 
 # --------------------------------------------------------------------- main
@@ -159,9 +180,11 @@ def build_view(
         if est.tokens(view) > budget_tokens:
             # recent turns alone can exceed a tight budget — shrink, then record it
             dropped = 0
-            while len(recent) > 1 and est.tokens(head + [note] + recent) > budget_tokens:
-                recent = recent[1:]
+            rgroups = group_turns(recent)
+            while len(rgroups) > 1 and est.tokens(head + [note] + _flat(rgroups)) > budget_tokens:
+                rgroups = rgroups[1:]
                 dropped += 1
+            recent = _flat(rgroups)
             state.log("recent_overflow", dropped=dropped)
             view = head + [note] + recent
         return view

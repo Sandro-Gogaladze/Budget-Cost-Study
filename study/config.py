@@ -28,8 +28,12 @@ K_SEEDS = 3                      # seeds 0..2 now; 3,4 later — nested, like ta
 PROXY_BASE_URL = "https://gemini-litellm-proxy-production.up.railway.app/v1"
 KEY_ENV = "LITELLM_KEY"          # never write the key to a file
 
-PRIMARY_MODEL = "gemini/gemini-3.5-flash"          # 37% published DeepSWE pass@1
-BAKEOFF_MODEL = "gemini/gemini-3.1-flash-lite"     # E1 bake-off only
+# DECISION (user, 2026-08-29): primary switched to Flash-Lite — L0 preflight
+# verified caching (cold $0.00295 -> warm $0.00111), input exactly $0.25/M,
+# and NO default thinking. ~6x cheaper; the 3.5 Flash census is retained as
+# the stronger-generation FULL-only comparison point.
+PRIMARY_MODEL = "gemini/gemini-3.1-flash-lite"
+ARCHIVE_MODEL = "gemini/gemini-3.5-flash"          # E1 census done on this (results/)
 # litellm needs the openai-compat provider prefix + our proxy base:
 def litellm_name(model: str) -> str:
     return f"openai/{model}"
@@ -43,7 +47,7 @@ MODEL_PINNED_AT = "2026-08-28"   # date the model string was pinned (canary-chec
 PRICE_TABLE_DATE = "2026-08-28"
 PRICES = {
     "gemini/gemini-3.5-flash":      {"in": 1.50, "cached_in": 0.15, "out": 9.00},
-    "gemini/gemini-3.1-flash-lite": {"in": 0.25, "cached_in": 0.025, "out": 1.50},  # unverified — E1
+    "gemini/gemini-3.1-flash-lite": {"in": 0.25, "cached_in": 0.025, "out": 1.50},  # in/cached VERIFIED vs billing 2026-08-29
 }
 
 # Thinking: default effort burns ~1K reasoning tokens/step at out-price.

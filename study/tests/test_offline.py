@@ -123,3 +123,49 @@ def test_spend_gates(tmp_path):
         led.check("E0"); assert False, "gate should have fired"
     except spend.SpendGateExceeded:
         pass
+
+
+def synth_toolcall_messages(n_turns: int = 20, obs_chars: int = 2500) -> list[dict]:
+    """Native tool-calling shape: assistant w/ tool_calls + tool result."""
+    msgs = [
+        {"role": "system", "content": "agent " * 40},
+        {"role": "user", "content": "Fix the bug. " * 30},
+    ]
+    for i in range(n_turns):
+        cmd = f"sed -i 's/a/b{i}/' x.go" if i % 4 == 0 else f"go test ./... -run T{i}"
+        msgs.append({"role": "assistant", "content": None,
+                     "tool_calls": [{"id": f"c{i}", "function": {"name": "bash",
+                                     "arguments": f'{{"command": "{cmd}"}}'}}]})
+        msgs.append({"role": "tool", "tool_call_id": f"c{i}", "content": "E" * obs_chars})
+    return msgs
+
+
+def _no_orphans(view):
+    """Every tool message must directly follow its assistant tool_call turn."""
+    ids_open = set()
+    for m in view:
+        if m.get("role") == "assistant" and m.get("tool_calls"):
+            ids_open = {tc["id"] for tc in m["tool_calls"]}
+        elif m.get("role") == "tool":
+            assert m["tool_call_id"] in ids_open, "orphaned tool message"
+        else:
+            ids_open = set()
+    return True
+
+
+def test_toolcall_pairs_never_split():
+    est = CalibratedEstimator()
+    msgs = synth_toolcall_messages()
+    budget = est.tokens(msgs) // 3
+    for strat in ("PRUNE", "RETRIEVE", "SUMMARIZE"):
+        v = build_view(msgs, strategy=strat, budget_tokens=budget, est=est,
+                       state=ViewState(), summarize_fn=simulated_summarize(200))
+        assert v[:HEAD_N] == msgs[:HEAD_N]
+        assert _no_orphans(v), strat
+
+
+def test_toolcall_write_detection_via_arguments():
+    from study.strategies import group_turns
+    msgs = synth_toolcall_messages()
+    groups = group_turns(msgs[HEAD_N:])
+    assert len(groups) == 20 and all(len(g) == 2 for g in groups)

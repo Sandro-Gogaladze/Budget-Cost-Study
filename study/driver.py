@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 
 from minisweagent.environments.docker import DockerEnvironment
-from minisweagent.models.litellm_textbased_model import LitellmTextbasedModel
+from minisweagent.models.litellm_model import LitellmModel
 
 from study import config as C
 from study.agent import ContextManagedAgent
@@ -28,22 +28,11 @@ from study.summarizer import make_summarizer
 
 SYSTEM_TEMPLATE = """You are a software engineering agent working in a sandboxed shell \
 at /app, which contains the repository you must modify.
-In each reply, think briefly, then give exactly ONE bash command in a ```bash fenced block.
-The command's output will be returned to you. Long outputs are truncated, so prefer \
-targeted commands (grep -n, sed -n, head).
-ONLY a fenced block tagged bash is executed — ```python or untagged fences are ignored.
-To run a script, wrap it in a bash heredoc inside the bash fence, e.g.:
-```bash
-python3 - <<'PYEOF'
-print("hello")
-PYEOF
-```
-When you are confident the task is complete, reply with
-```bash
-echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT
-```"""
-
-ACTION_REGEX = r"```(?:bash|sh)\s*\n(.*?)\n```"
+Use the bash tool to run exactly ONE command per turn; its output is returned to you. \
+Long outputs are truncated, so prefer targeted commands (grep -n, sed -n, head). \
+To run a script, feed it to the interpreter via a heredoc in one bash command.
+When you are confident the task is complete, run:
+echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"""
 
 INSTANCE_TEMPLATE = "{{task}}"
 
@@ -117,16 +106,10 @@ def make_model(model_name: str):
     }
     if C.REASONING_EFFORT:
         kwargs["extra_body"] = {"reasoning_effort": C.REASONING_EFFORT}
-    return LitellmTextbasedModel(
-        model_name=C.litellm_name(model_name),
-        model_kwargs=kwargs, action_regex=ACTION_REGEX,
-        format_error_template=(
-            "Found {{actions|length}} executable actions. Your reply must contain "
-            "EXACTLY ONE fenced block tagged bash, like:\n"
-            "```bash\n<one command>\n```\n"
-            "Only ```bash fences are executed — ```python, ```go or untagged fences are NOT. "
-            "To run a script, feed it to the interpreter via a heredoc INSIDE the bash fence."
-        ))
+    # DECISION 2026-08-29: native tool-calling protocol. Flash-Lite refuses the
+    # text protocol (hallucinates a `bash` tool), and L0b verified implicit
+    # caching SURVIVES declared tools through this proxy on both models.
+    return LitellmModel(model_name=C.litellm_name(model_name), model_kwargs=kwargs)
 
 
 def run_one(task_id: str, *, strategy: str, budget_tokens, seed: int,
